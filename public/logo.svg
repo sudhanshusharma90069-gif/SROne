@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="180" viewBox="0 0 640 180">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f9a826"/>
+      <stop offset="1" stop-color="#ff6c37"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="640" height="180" rx="0" fill="#0f0f1e"/>
+  <rect x="50" y="44" width="92" height="92" rx="24" fill="url(#g)"/>
+  <text x="96" y="104" font-family="Inter, Arial, sans-serif" font-size="44" font-weight="800" fill="#1a1a2e" text-anchor="middle" dominant-baseline="middle">SR</text>
+  <text x="168" y="112" font-family="Inter, Arial, sans-serif" font-size="72" font-weight="800" fill="#ffffff">SR<tspan fill="#f9a826">One</tspan></text>
+  <text x="170" y="150" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="500" fill="#9ca3af" letter-spacing="3">AI-CURATED DEALS</text>
+</svg>
