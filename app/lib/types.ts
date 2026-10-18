@@ -2,6 +2,7 @@ export interface Store {
   name: string;
   description: string;
   link: string;
+  category?: string;
 }
 
 export interface Deal {

@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'DealDunia - Best Offers from Amazon, Flipkart & More',
-  description: 'Discover top deals, discounts and cashback offers from Amazon, Flipkart, Blinkit, Zepto, JioMart and Reliance Digital.',
+  title: 'SROne — AI-Curated Deals from 35+ Top Stores',
+  description: 'SROne — AI-powered deals across shopping, groceries, food delivery, hotels, flights and more. Amazon, Flipkart, Myntra, Swiggy, MakeMyTrip and 30+ stores in one place. Founded by Suddhanshu & Rakhi Kumari.',
 };
 
 export default function RootLayout({
