@@ -5,7 +5,7 @@
 //  - Most other stores: EarnKaro (earnkaro.com) or Cuelinks (cuelinks.com) — one account covers Myntra, Ajio, Nykaa, Swiggy, MakeMyTrip etc.
 
 export const AFFILIATE_IDS: Record<string, string> = {
-  amazon: 'YOUR_AFFILIATE_ID',
+  amazon: 'https://link.amazon/B0dHvm5kb',
   flipkart: 'YOUR_AFFILIATE_ID',
   earnkaro: 'YOUR_AFFILIATE_ID',
   cuelinks: 'YOUR_AFFILIATE_ID',
