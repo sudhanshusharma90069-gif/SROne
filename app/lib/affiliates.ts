@@ -1,0 +1,57 @@
+// Central affiliate ID config — paste your real IDs here once.
+// Get IDs from:
+//  - Amazon: amazon.in/associates
+//  - Flipkart: affiliate.flipkart.com
+//  - Most other stores: EarnKaro (earnkaro.com) or Cuelinks (cuelinks.com) — one account covers Myntra, Ajio, Nykaa, Swiggy, MakeMyTrip etc.
+
+export const AFFILIATE_IDS: Record<string, string> = {
+  amazon: 'YOUR_AFFILIATE_ID',
+  flipkart: 'YOUR_AFFILIATE_ID',
+  earnkaro: 'YOUR_AFFILIATE_ID',
+  cuelinks: 'YOUR_AFFILIATE_ID',
+  booking: 'YOUR_AFFILIATE_ID',
+  shopify: 'YOUR_AFFILIATE_ID',
+};
+
+// Commission rate estimates per store (%) — for admin dashboard estimates.
+// Update with real rates from your affiliate network dashboards.
+export const COMMISSION_RATES: Record<string, number> = {
+  Amazon: 3,
+  Flipkart: 5,
+  Meesho: 12,
+  Snapdeal: 8,
+  ShopClues: 8,
+  IndiaMART: 5,
+  Myntra: 10,
+  Ajio: 10,
+  'Tata CLiQ': 8,
+  LimeRoad: 10,
+  Nykaa: 8,
+  Purplle: 10,
+  Blinkit: 5,
+  Zepto: 5,
+  BigBasket: 6,
+  JioMart: 5,
+  Swiggy: 3,
+  Zomato: 3,
+  "Domino's": 5,
+  Rominos: 5,
+  'Reliance Digital': 3,
+  Lenskart: 8,
+  FirstCry: 10,
+  Pepperfry: 8,
+  Uber: 4,
+  Rapido: 5,
+  Shopify: 20,
+  'OYO Rooms': 6,
+  'Booking.com': 4,
+  Airbnb: 5,
+  MakeMyTrip: 4,
+  'MakeMyTrip Hotels': 4,
+  Goibibo: 4,
+  Yatra: 4,
+  Cleartrip: 4,
+  EaseMyTrip: 4,
+  IRCTC: 2,
+  redBus: 5,
+};

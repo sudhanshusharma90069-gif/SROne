@@ -79,6 +79,15 @@ export default function Header() {
                         href={store.link}
                         target="_blank"
                         rel="noopener noreferrer"
+                        onClick={() => {
+                          try {
+                            fetch('/api/track', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ store: store.name, deal: null, type: 'click' }),
+                            });
+                          } catch {}
+                        }}
                         className="block px-4 py-2 rounded-lg text-sm text-gray-400 hover:bg-white/10 hover:text-white"
                       >
                         {store.name}

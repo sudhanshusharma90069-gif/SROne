@@ -1,5 +1,15 @@
 import { Deal } from '../lib/types';
 
+function trackClick(store: string, deal: string) {
+  try {
+    fetch('/api/track', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ store, deal, type: 'click' }),
+    });
+  } catch {}
+}
+
 const brands: Record<string, { c1: string; c2: string; text: string }> = {
   Amazon: { c1: '#ff9900', c2: '#ff6c37', text: '#1a1a2e' },
   Flipkart: { c1: '#2874f0', c2: '#0d3b8f', text: '#ffffff' },
@@ -96,6 +106,7 @@ export default function DealCard({ deal }: { deal: Deal }) {
           href={deal.link}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={() => trackClick(deal.store, deal.title)}
           className="inline-flex items-center justify-center w-full px-5 py-2.5 rounded-lg font-semibold transition-opacity hover:opacity-90"
           style={{ background: `linear-gradient(135deg, ${brand.c1} 0%, ${brand.c2} 100%)`, color: brand.text === '#1a1a2e' ? '#1a1a2e' : '#ffffff' }}
         >
