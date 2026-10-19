@@ -1,4 +1,5 @@
 import Header from './components/Header';
+import FestivalBanner from './components/FestivalBanner';
 import Hero from './sections/Hero';
 import Deals from './sections/Deals';
 import About from './sections/About';
@@ -10,6 +11,7 @@ export default function Home() {
     <>
       <Header />
       <main>
+        <FestivalBanner />
         <Hero />
         <Deals />
         <About />
