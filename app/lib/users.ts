@@ -1,6 +1,5 @@
 import { hashPassword, verifyPassword } from './password';
 import { SessionUser } from './jwt';
-import { prisma } from './prisma';
 
 export interface User {
   id: string;
@@ -49,6 +48,7 @@ export async function registerUser(
   const normalized = email.trim().toLowerCase();
 
   if (hasDatabase) {
+    const { prisma } = await import('./prisma');
     const existing = await prisma.user.findUnique({ where: { email: normalized } });
     if (existing) return { error: 'An account with this email already exists' };
     const passwordHash = hashPassword(password);
@@ -72,6 +72,7 @@ export async function loginUser(email: string, password: string): Promise<Sessio
   let user: User | null = null;
 
   if (hasDatabase) {
+    const { prisma } = await import('./prisma');
     const dbUser = await prisma.user.findUnique({ where: { email: normalized } });
     if (dbUser) user = dbUser as User;
   } else {
