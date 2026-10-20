@@ -55,7 +55,7 @@ export default function Deals() {
           </div>
           <h2 className="text-3xl sm:text-4xl font-bold mb-4">AI-Classified Best Deals</h2>
           <p className="text-gray-400 max-w-2xl mx-auto">
-            Only the best offers — picked and summarized by AI across 35+ stores.
+            Only the best offers — picked and summarized by AI across 70+ stores.
           </p>
         </div>
 

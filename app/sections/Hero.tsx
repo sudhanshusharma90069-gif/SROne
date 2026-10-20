@@ -1,6 +1,6 @@
 const stats = [
-  { value: '38+', label: 'Top Stores' },
-  { value: '11', label: 'Categories' },
+  { value: '70+', label: 'Top Stores' },
+  { value: '17', label: 'Categories' },
   { value: 'AI', label: 'Curated Deals' },
   { value: '100%', label: 'Free to Use' },
 ];

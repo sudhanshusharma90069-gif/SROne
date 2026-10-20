@@ -1,4 +1,16 @@
+'use client';
+
+import { useState } from 'react';
 import { Store } from '../lib/types';
+
+function getLogoUrl(link: string) {
+  try {
+    const { hostname } = new URL(link);
+    return `https://www.google.com/s2/favicons?domain=${hostname}&sz=128`;
+  } catch {
+    return '';
+  }
+}
 
 export default function StoreCard({ store }: { store: Store }) {
   const colors: Record<string, string> = {
@@ -105,6 +117,7 @@ export default function StoreCard({ store }: { store: Store }) {
     'Lionsgate Play': 'bg-[#ff6f00]',
   };
 
+  const [logoFailed, setLogoFailed] = useState(false);
   const firstLetter = store.name[0];
 
   return (
@@ -116,13 +129,23 @@ export default function StoreCard({ store }: { store: Store }) {
     >
       <div className="absolute inset-0 bg-brand-accent/5 opacity-0 group-hover:opacity-100 transition-opacity" />
       <div className="relative z-10 flex flex-col items-center text-center">
-        <div
-          className={`w-16 h-16 rounded-2xl flex items-center justify-center text-xl font-bold shadow-lg mb-4 ${
-            colors[store.name] || 'bg-brand-600'
-          }`}
-        >
-          {firstLetter}
-        </div>
+        {!logoFailed ? (
+          <img
+            src={getLogoUrl(store.link)}
+            alt={store.name}
+            loading="lazy"
+            onError={() => setLogoFailed(true)}
+            className="w-16 h-16 rounded-2xl object-contain bg-white p-2 shadow-lg mb-4"
+          />
+        ) : (
+          <div
+            className={`w-16 h-16 rounded-2xl flex items-center justify-center text-xl font-bold shadow-lg mb-4 ${
+              colors[store.name] || 'bg-brand-600'
+            }`}
+          >
+            {firstLetter}
+          </div>
+        )}
         <h3 className="text-lg font-bold text-white mb-2">{store.name}</h3>
         <p className="text-sm text-gray-400 mb-5 leading-relaxed">{store.description}</p>
         <span className="inline-flex items-center gap-1 text-sm font-semibold text-brand-accent group-hover:translate-x-1 transition-transform">

@@ -1,3 +1,6 @@
+'use client';
+
+import { useState } from 'react';
 import { Deal } from '../lib/types';
 
 function trackClick(store: string, deal: string) {
@@ -8,6 +11,15 @@ function trackClick(store: string, deal: string) {
       body: JSON.stringify({ store, deal, type: 'click' }),
     });
   } catch {}
+}
+
+function getLogoUrl(link: string) {
+  try {
+    const { hostname } = new URL(link);
+    return `https://www.google.com/s2/favicons?domain=${hostname}&sz=128`;
+  } catch {
+    return '';
+  }
 }
 
 const brands: Record<string, { c1: string; c2: string; text: string }> = {
@@ -54,6 +66,7 @@ const brands: Record<string, { c1: string; c2: string; text: string }> = {
 export default function DealCard({ deal }: { deal: Deal }) {
   const brand = brands[deal.store] || { c1: '#f9a826', c2: '#ff6c37', text: '#1a1a2e' };
   const initial = deal.store.replace(/[^A-Za-z]/g, '').slice(0, 2).toUpperCase();
+  const [logoFailed, setLogoFailed] = useState(false);
 
   return (
     <div className="flex flex-col rounded-2xl overflow-hidden bg-brand-800/50 border border-white/10 card-hover">
@@ -69,12 +82,22 @@ export default function DealCard({ deal }: { deal: Deal }) {
           className="absolute -right-10 -bottom-10 w-24 h-24 rounded-full opacity-15"
           style={{ background: 'rgba(0,0,0,0.3)' }}
         />
-        <div
-          className="w-14 h-14 rounded-xl flex items-center justify-center text-xl font-extrabold mr-4 shadow-lg"
-          style={{ background: 'rgba(255,255,255,0.92)', color: brand.c2 }}
-        >
-          {initial}
-        </div>
+        {!logoFailed ? (
+          <img
+            src={getLogoUrl(deal.link)}
+            alt={deal.store}
+            loading="lazy"
+            onError={() => setLogoFailed(true)}
+            className="w-14 h-14 rounded-xl object-contain bg-white p-2 shadow-lg mr-4"
+          />
+        ) : (
+          <div
+            className="w-14 h-14 rounded-xl flex items-center justify-center text-xl font-extrabold mr-4 shadow-lg"
+            style={{ background: 'rgba(255,255,255,0.92)', color: brand.c2 }}
+          >
+            {initial}
+          </div>
+        )}
         <div className="min-w-0">
           <p className="text-xs font-bold uppercase tracking-widest opacity-80" style={{ color: brand.text }}>
             {deal.category}
