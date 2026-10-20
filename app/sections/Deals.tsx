@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import DealCard from '../components/DealCard';
 import { Deal } from '../lib/types';
 
-export default function Deals() {
+export default function Deals({ showAlert = true }: { showAlert?: boolean }) {
   const [deals, setDeals] = useState<Deal[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState('');
@@ -104,7 +104,7 @@ export default function Deals() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filtered.map((deal, index) => (
-              <DealCard key={index} deal={deal} />
+              <DealCard key={index} deal={deal} showAlert={showAlert} />
             ))}
           </div>
         )}

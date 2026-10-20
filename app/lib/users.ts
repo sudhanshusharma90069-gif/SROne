@@ -66,6 +66,27 @@ export async function registerUser(
   return { user: toSession(user) };
 }
 
+export async function upgradeUserToPremium(email: string): Promise<SessionUser | null> {
+  const normalized = email.trim().toLowerCase();
+
+  if (hasDatabase) {
+    const { prisma } = await import('./prisma');
+    const existing = await prisma.user.findUnique({ where: { email: normalized } });
+    if (!existing) return null;
+    const updated = await prisma.user.update({
+      where: { email: normalized },
+      data: { role: 'premium' },
+    });
+    return toSession(updated as User);
+  }
+
+  const user = users.get(normalized);
+  if (!user) return null;
+  user.role = 'premium';
+  users.set(normalized, user);
+  return toSession(user);
+}
+
 export async function loginUser(email: string, password: string): Promise<SessionUser | null> {
   const normalized = email.trim().toLowerCase();
 

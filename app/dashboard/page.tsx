@@ -61,7 +61,7 @@ export default function FreeDashboard() {
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-14">
               <a
-                href="/premium"
+                href="/subscribe"
                 className="px-8 py-4 rounded-xl bg-brand-accent text-brand-900 font-bold text-lg hover:bg-brand-accent-hover transition-all hover:scale-105 shadow-lg shadow-brand-accent/20"
               >
                 Upgrade to Premium
@@ -84,7 +84,7 @@ export default function FreeDashboard() {
           </div>
         </section>
 
-        <Deals />
+        <Deals showAlert={false} />
       </main>
 
       <Footer />

@@ -112,7 +112,7 @@ function setStoredVotes(title: string, up: number, down: number, user: 'up' | 'd
   localStorage.setItem(`srone-vote-${title}`, JSON.stringify({ up, down, user }));
 }
 
-export default function DealCard({ deal }: { deal: Deal }) {
+export default function DealCard({ deal, showAlert = true }: { deal: Deal; showAlert?: boolean }) {
   const brand = brands[deal.store] || { c1: '#f9a826', c2: '#ff6c37', text: '#1a1a2e' };
   const initial = deal.store.replace(/[^A-Za-z]/g, '').slice(0, 2).toUpperCase();
   const [logoFailed, setLogoFailed] = useState(false);
@@ -267,12 +267,14 @@ export default function DealCard({ deal }: { deal: Deal }) {
           </div>
 
           <div className="mb-3 flex gap-2">
-            <button
-              onClick={() => setAlertOpen(true)}
-              className="flex-1 rounded-lg border border-zinc-600 bg-transparent px-3 py-2 text-xs font-semibold text-zinc-200 hover:bg-zinc-800"
-            >
-              Set Price Alert
-            </button>
+            {showAlert && (
+              <button
+                onClick={() => setAlertOpen(true)}
+                className="flex-1 rounded-lg border border-zinc-600 bg-transparent px-3 py-2 text-xs font-semibold text-zinc-200 hover:bg-zinc-800"
+              >
+                Set Price Alert
+              </button>
+            )}
             <a
               href={deal.link}
               target="_blank"
@@ -296,7 +298,7 @@ export default function DealCard({ deal }: { deal: Deal }) {
         </div>
       </div>
 
-      <PriceAlertModal open={alertOpen} onClose={() => setAlertOpen(false)} deal={deal} />
+      {showAlert && <PriceAlertModal open={alertOpen} onClose={() => setAlertOpen(false)} deal={deal} />}
     </>
   );
 }
