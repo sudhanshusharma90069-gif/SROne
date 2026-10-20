@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { computePrices } from '../../lib/prices';
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
@@ -338,10 +339,15 @@ async function aiSummary(title: string, description: string): Promise<string> {
 
 export async function GET() {
   const deals = await Promise.all(
-    sample.map(async (d) => ({
-      ...d,
-      ai_summary: await aiSummary(d.title, d.description),
-    }))
+    sample.map(async (d) => {
+      const { originalPrice, discountedPrice } = computePrices(d);
+      return {
+        ...d,
+        ai_summary: await aiSummary(d.title, d.description),
+        originalPrice,
+        discountedPrice,
+      };
+    })
   );
   return NextResponse.json({ deals });
 }

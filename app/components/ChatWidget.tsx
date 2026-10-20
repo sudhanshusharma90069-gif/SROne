@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { BANK_CARDS, getSelectedCardName, setSelectedCardName } from '../lib/cards';
 
 interface StoreLink {
   name: string;
@@ -33,6 +34,7 @@ export default function ChatWidget() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [listening, setListening] = useState(false);
+  const [selectedCard, setSelectedCard] = useState(getSelectedCardName());
   const messagesRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const recognitionRef = useRef<any>(null);
@@ -130,6 +132,27 @@ export default function ChatWidget() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
+          </div>
+          <div className="px-3 py-2 border-b border-white/10 bg-brand-800/50">
+            <p className="text-[10px] text-gray-400 mb-1.5 uppercase tracking-wider">Select bank card</p>
+            <div className="flex gap-1.5 overflow-x-auto no-scrollbar">
+              {BANK_CARDS.map((card) => (
+                <button
+                  key={card.name}
+                  onClick={() => {
+                    setSelectedCard(card.name);
+                    setSelectedCardName(card.name);
+                  }}
+                  className={`whitespace-nowrap rounded-full px-2.5 py-1 text-[10px] font-semibold transition-colors ${
+                    selectedCard === card.name
+                      ? 'bg-indigo-600 text-white'
+                      : 'bg-white/10 text-gray-300 hover:bg-white/20'
+                  }`}
+                >
+                  {card.name}
+                </button>
+              ))}
+            </div>
           </div>
           <div ref={messagesRef} className="flex-1 overflow-y-auto p-4 space-y-3">
             {messages.map((m, i) => (

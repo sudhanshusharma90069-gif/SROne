@@ -13,4 +13,6 @@ export interface Deal {
   category: string;
   discount: string;
   ai_summary: string;
+  originalPrice?: number;
+  discountedPrice?: number;
 }
