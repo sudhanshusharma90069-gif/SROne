@@ -11,7 +11,13 @@ import {
   PieChart,
   Pie,
   Cell,
+  AreaChart,
+  Area,
+  CartesianGrid,
 } from 'recharts';
+import Header from '../components/Header';
+import FestivalBanner from '../components/FestivalBanner';
+import Footer from '../sections/Footer';
 import { formatPrice } from '../lib/prices';
 
 interface Recommendation {
@@ -55,7 +61,17 @@ interface Bundle {
 }
 
 const TABS = ['Overview', 'Analytics', 'Basket', 'Bundles', 'Assistant', 'Alerts'];
-const COLORS = ['#f59e0b', '#10b981', '#6366f1', '#ec4899', '#06b6d4', '#f97316'];
+const COLORS = ['#f9a826', '#10b981', '#6366f1', '#ec4899', '#06b6d4', '#f97316'];
+
+const trend = [
+  { day: 'Mon', clicks: 1200 },
+  { day: 'Tue', clicks: 1800 },
+  { day: 'Wed', clicks: 1500 },
+  { day: 'Thu', clicks: 2400 },
+  { day: 'Fri', clicks: 2100 },
+  { day: 'Sat', clicks: 3200 },
+  { day: 'Sun', clicks: 2900 },
+];
 
 export default function PremiumDashboard() {
   const [user, setUser] = useState<{ name: string; role: string } | null>(null);
@@ -160,307 +176,394 @@ export default function PremiumDashboard() {
   );
 
   return (
-    <main className="min-h-screen bg-zinc-950 text-zinc-100">
-      <div className="mx-auto max-w-7xl px-4 py-8">
-        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-3xl font-extrabold tracking-tight">
-              Premium <span className="text-brand-accent">Dashboard</span>
-            </h1>
-            <p className="mt-1 text-sm text-zinc-400">
-              Welcome back, {user?.name || 'Guest'} · {user?.role?.toUpperCase()}
+    <div className="min-h-screen bg-brand-900 text-white">
+      <FestivalBanner />
+      <Header />
+
+      <main>
+        <section className="relative pt-24 pb-12 dot-grid hero-glow overflow-hidden">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-sm text-gray-300 mb-8">
+              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+              {user ? `Premium access active — ${user.name}` : 'Unlock the full power of SROne AI'}
+            </div>
+            <div className="flex items-center justify-center gap-3 mb-6">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-brand-accent to-[#ff6c37] flex items-center justify-center shadow-lg shadow-brand-accent/20">
+                <span className="text-brand-900 font-extrabold text-lg">SR</span>
+              </div>
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight">
+                Premium <span className="gradient-text">Dashboard</span>
+              </h1>
+            </div>
+            <p className="max-w-2xl mx-auto text-lg text-gray-400 mb-10 leading-relaxed">
+              Predictive recommendations, real-time basket optimization, advanced analytics and AI assistance — all in one premium command center.
             </p>
-          </div>
-          <button
-            onClick={logout}
-            className="rounded-lg border border-white/10 px-4 py-2 text-sm font-medium text-zinc-300 hover:bg-white/5"
-          >
-            Logout
-          </button>
-        </div>
-
-        <div className="mb-8 flex flex-wrap gap-2 border-b border-white/10 pb-3">
-          {TABS.map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
-                activeTab === tab
-                  ? 'bg-brand-accent text-zinc-950'
-                  : 'text-zinc-400 hover:bg-white/5 hover:text-white'
-              }`}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
-
-        {activeTab === 'Overview' && (
-          <div className="space-y-6">
-            {analytics && (
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <StatCard label="Total Clicks" value={analytics.totalClicks.toLocaleString()} />
-                <StatCard label="Live Deals" value={analytics.totalDeals.toString()} />
-                <StatCard label="Active Users" value={analytics.activeUsers.toLocaleString()} />
-                <StatCard label="Est. Savings" value={formatPrice(analytics.savingsEstimate)} accent />
-              </div>
-            )}
-
-            <div className="grid gap-6 lg:grid-cols-3">
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-5 lg:col-span-2">
-                <h2 className="mb-4 text-lg font-bold">Predictive Recommendations</h2>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {recommendations.slice(0, 6).map((r) => (
-                    <a
-                      key={r.store}
-                      href={r.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center justify-between rounded-xl border border-white/5 bg-zinc-900/50 p-4 hover:border-brand-accent/30"
-                    >
-                      <div>
-                        <p className="font-semibold">{r.store}</p>
-                        <p className="text-xs text-zinc-400">{r.reason}</p>
-                      </div>
-                      <span className="text-sm font-bold text-emerald-400">{Math.round(r.score * 100)}%</span>
-                    </a>
-                  ))}
-                </div>
-              </div>
-
-              {budget && (
-                <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-white/5 to-transparent p-5">
-                  <h2 className="mb-3 text-lg font-bold">AI Budget Tracker</h2>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between"><span className="text-zinc-400">Budget</span><span>{formatPrice(budget.budget)}</span></div>
-                    <div className="flex justify-between"><span className="text-zinc-400">Spent</span><span>{formatPrice(budget.spent)}</span></div>
-                    <div className="flex justify-between"><span className="text-zinc-400">Remaining</span><span className={budget.remaining < 0 ? 'text-red-400' : 'text-emerald-400'}>{formatPrice(budget.remaining)}</span></div>
-                  </div>
-                  <div className="mt-4 h-2 w-full rounded-full bg-zinc-800">
-                    <div
-                      className="h-2 rounded-full bg-brand-accent"
-                      style={{ width: `${Math.min(100, (budget.spent / budget.budget) * 100)}%` }}
-                    />
-                  </div>
-                  <ul className="mt-4 list-disc space-y-1 pl-4 text-xs text-zinc-400">
-                    {budget.suggestions.slice(0, 3).map((s, i) => (
-                      <li key={i}>{s}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'Analytics' && analytics && (
-          <div className="grid gap-6 lg:grid-cols-2">
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-              <h2 className="mb-4 text-lg font-bold">Top Stores</h2>
-              <div className="h-72 w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={analytics.topStores} margin={{ top: 8, right: 8, left: 0, bottom: 24 }}>
-                    <XAxis dataKey="name" tick={{ fill: '#a1a1aa', fontSize: 10 }} angle={-25} textAnchor="end" />
-                    <YAxis tick={{ fill: '#a1a1aa', fontSize: 10 }} />
-                    <Tooltip
-                      contentStyle={{ backgroundColor: '#18181b', border: 'none', borderRadius: '0.5rem' }}
-                      cursor={{ fill: 'rgba(255,255,255,0.05)' }}
-                    />
-                    <Bar dataKey="clicks" fill="#f59e0b" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-              <h2 className="mb-4 text-lg font-bold">Category Breakdown</h2>
-              <div className="h-72 w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie data={chartData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={90} label>
-                      {chartData.map((_, i) => (
-                        <Cell key={`cell-${i}`} fill={COLORS[i % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip contentStyle={{ backgroundColor: '#18181b', border: 'none', borderRadius: '0.5rem' }} />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'Basket' && (
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
-            <h2 className="mb-2 text-xl font-bold">Real-Time Cross-Platform Basket Optimizer</h2>
-            <p className="mb-5 text-sm text-zinc-400">Compare basket totals across quick-commerce and grocery stores.</p>
-            <div className="flex flex-col gap-3 md:flex-row">
-              <input
-                type="text"
-                value={basketInput}
-                onChange={(e) => setBasketInput(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && runBasketOptimizer()}
-                placeholder="e.g. milk, bread, eggs, rice, apples"
-                className="flex-1 rounded-xl border border-white/10 bg-zinc-900 px-4 py-3 text-sm outline-none focus:border-brand-accent"
-              />
-              <button
-                onClick={runBasketOptimizer}
-                className="rounded-xl bg-indigo-600 px-6 py-3 text-sm font-bold text-white hover:bg-indigo-700"
-              >
-                Optimize Basket
-              </button>
-            </div>
-
-            {basketResult && (
-              <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                {basketResult.quotes.slice(0, 4).map((q, i) => (
-                  <div
-                    key={q.store}
-                    className={`rounded-xl border p-4 ${i === 0 ? 'border-emerald-500/50 bg-emerald-900/10' : 'border-white/10 bg-zinc-900/50'}`}
-                  >
-                    <div className="mb-2 flex items-center justify-between">
-                      <span className="font-bold">{q.store}</span>
-                      {i === 0 && <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-400">BEST</span>}
-                    </div>
-                    <p className="text-2xl font-bold">{formatPrice(q.total)}</p>
-                    <p className="mt-1 text-xs text-zinc-400">{q.items.length} items</p>
-                    <a
-                      href={q.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-3 inline-block rounded-lg bg-white/5 px-3 py-1.5 text-xs text-white hover:bg-white/10"
-                    >
-                      Go to store
-                    </a>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {activeTab === 'Bundles' && (
-          <div className="space-y-5">
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
-              <h2 className="mb-2 text-xl font-bold">Predictive Bundling</h2>
-              <p className="mb-5 text-sm text-zinc-400">Enter items to discover dynamic bundle discounts.</p>
-              <div className="flex flex-col gap-3 md:flex-row">
-                <input
-                  type="text"
-                  value={bundleInput}
-                  onChange={(e) => setBundleInput(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && runBundleBuilder()}
-                  placeholder="e.g. milk, bread, eggs, rice"
-                  className="flex-1 rounded-xl border border-white/10 bg-zinc-900 px-4 py-3 text-sm outline-none focus:border-brand-accent"
-                />
-                <button
-                  onClick={runBundleBuilder}
-                  className="rounded-xl bg-indigo-600 px-6 py-3 text-sm font-bold text-white hover:bg-indigo-700"
-                >
-                  Build Bundles
-                </button>
-              </div>
-            </div>
-
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {bundles.map((b, i) => (
-                <div key={i} className="rounded-2xl border border-white/10 bg-gradient-to-br from-white/5 to-transparent p-5">
-                  <h3 className="mb-2 font-bold">{b.name}</h3>
-                  <div className="mb-3 flex flex-wrap gap-1">
-                    {b.items.map((item) => (
-                      <span key={item} className="rounded-md bg-white/5 px-2 py-1 text-[10px] text-zinc-300">{item}</span>
-                    ))}
-                  </div>
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-xl font-bold text-emerald-400">{formatPrice(b.bundlePrice)}</span>
-                    <span className="text-sm text-zinc-500 line-through">{formatPrice(b.originalPrice)}</span>
-                  </div>
-                  <p className="mt-2 text-xs text-zinc-400">Demand score: {b.demandScore}%</p>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 max-w-3xl mx-auto">
+              {analytics && [
+                { value: analytics.totalClicks.toLocaleString(), label: 'Total Clicks' },
+                { value: analytics.totalDeals.toString(), label: 'Live Deals' },
+                { value: analytics.activeUsers.toLocaleString(), label: 'Active Users' },
+                { value: formatPrice(analytics.savingsEstimate), label: 'Est. Savings' },
+              ].map((s) => (
+                <div key={s.label} className="p-5 rounded-2xl bg-white/[0.04] border border-white/10">
+                  <p className="text-2xl sm:text-3xl font-extrabold gradient-text mb-1">{s.value}</p>
+                  <p className="text-xs sm:text-sm text-gray-500 uppercase tracking-wider">{s.label}</p>
                 </div>
               ))}
             </div>
           </div>
-        )}
+        </section>
 
-        {activeTab === 'Assistant' && (
-          <div className="mx-auto max-w-3xl rounded-2xl border border-white/10 bg-white/5 p-6">
-            <h2 className="mb-4 text-xl font-bold">AI Shopping Assistant</h2>
-            <div className="mb-4 min-h-[6rem] rounded-xl bg-zinc-900/70 p-4 text-sm leading-relaxed text-zinc-200">
-              {assistant}
-            </div>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={assistantInput}
-                onChange={(e) => setAssistantInput(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && askAssistant()}
-                placeholder="Ask SROne AI..."
-                className="flex-1 rounded-xl border border-white/10 bg-zinc-900 px-4 py-3 text-sm outline-none focus:border-brand-accent"
-              />
+        <section className="sticky top-[72px] z-30 glass border-y border-white/10">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+            <div className="flex flex-wrap gap-2">
+              {TABS.map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`rounded-full px-4 py-2 text-xs sm:text-sm font-semibold transition-all ${
+                    activeTab === tab
+                      ? 'bg-brand-accent text-brand-900 shadow-lg shadow-brand-accent/20'
+                      : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                  }`}
+                >
+                  {tab}
+                </button>
+              ))}
               <button
-                onClick={askAssistant}
-                className="rounded-xl bg-indigo-600 px-6 py-3 text-sm font-bold text-white hover:bg-indigo-700"
+                onClick={logout}
+                className="ml-auto rounded-full border border-white/10 px-4 py-2 text-xs sm:text-sm font-semibold text-gray-300 hover:bg-white/5 hover:text-white"
               >
-                Ask
+                Logout
               </button>
             </div>
           </div>
-        )}
+        </section>
 
-        {activeTab === 'Alerts' && (
-          <div className="mx-auto max-w-3xl rounded-2xl border border-white/10 bg-gradient-to-br from-white/5 to-transparent p-6 md:p-8">
-            <h2 className="mb-2 text-xl font-bold">Priority WhatsApp Price Drop Alert</h2>
-            <p className="mb-6 text-sm text-zinc-400">Premium users get faster alerts when the target price is reached.</p>
-            <div className="grid gap-4 md:grid-cols-2">
-              <input
-                type="text"
-                value={alert.deal}
-                onChange={(e) => setAlert({ ...alert, deal: e.target.value })}
-                placeholder="Deal name"
-                className="rounded-xl border border-white/10 bg-zinc-900 px-4 py-3 text-sm outline-none focus:border-brand-accent"
-              />
-              <input
-                type="number"
-                value={alert.target}
-                onChange={(e) => setAlert({ ...alert, target: e.target.value })}
-                placeholder="Target price"
-                className="rounded-xl border border-white/10 bg-zinc-900 px-4 py-3 text-sm outline-none focus:border-brand-accent"
-              />
-              <input
-                type="tel"
-                value={alert.phone}
-                onChange={(e) => setAlert({ ...alert, phone: e.target.value })}
-                placeholder="WhatsApp number"
-                className="rounded-xl border border-white/10 bg-zinc-900 px-4 py-3 text-sm outline-none focus:border-brand-accent"
-              />
-              <select
-                value={alert.priority}
-                onChange={(e) => setAlert({ ...alert, priority: e.target.value as 'standard' | 'priority' })}
-                className="rounded-xl border border-white/10 bg-zinc-900 px-4 py-3 text-sm outline-none focus:border-brand-accent"
-              >
-                <option value="priority">Priority (instant)</option>
-                <option value="standard">Standard</option>
-              </select>
-            </div>
-            <button
-              onClick={setPriceAlert}
-              className="mt-5 rounded-xl bg-emerald-600 px-8 py-3 text-sm font-bold text-white hover:bg-emerald-700"
-            >
-              Set Alert
-            </button>
-            {alert.status && <p className="mt-3 text-sm text-emerald-400">{alert.status}</p>}
+        <section className="py-16 lg:py-24 bg-brand-800/30 min-h-[50vh]">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            {activeTab === 'Overview' && (
+              <div className="space-y-10">
+                <div>
+                  <div className="mb-6 flex items-center gap-2">
+                    <span className="rounded-full bg-brand-accent/10 p-2 text-brand-accent">
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                    </span>
+                    <h2 className="text-2xl font-bold">Predictive Recommendations</h2>
+                  </div>
+                  <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                    {recommendations.slice(0, 6).map((r) => (
+                      <a
+                        key={r.store}
+                        href={r.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 card-hover"
+                      >
+                        <div className="mb-2 flex items-center justify-between">
+                          <p className="font-bold text-white">{r.store}</p>
+                          <span className="rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-bold text-emerald-400">
+                            {Math.round(r.score * 100)}%
+                          </span>
+                        </div>
+                        <p className="text-xs text-gray-400">{r.reason}</p>
+                        <p className="mt-2 text-xs text-zinc-500">{r.category}</p>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+
+                {budget && (
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 lg:p-8">
+                    <div className="mb-6 flex items-center gap-2">
+                      <span className="rounded-full bg-brand-accent/10 p-2 text-brand-accent">
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </span>
+                      <h2 className="text-2xl font-bold">AI Budget Tracker</h2>
+                    </div>
+                    <div className="grid gap-8 lg:grid-cols-3">
+                      <div className="space-y-3 text-sm">
+                        <div className="flex justify-between"><span className="text-gray-400">Budget</span><span>{formatPrice(budget.budget)}</span></div>
+                        <div className="flex justify-between"><span className="text-gray-400">Spent</span><span>{formatPrice(budget.spent)}</span></div>
+                        <div className="flex justify-between"><span className="text-gray-400">Remaining</span><span className={budget.remaining < 0 ? 'text-red-400' : 'text-emerald-400'}>{formatPrice(budget.remaining)}</span></div>
+                      </div>
+                      <div className="lg:col-span-2">
+                        <div className="mb-2 h-3 w-full rounded-full bg-zinc-800">
+                          <div
+                            className="h-3 rounded-full bg-brand-accent"
+                            style={{ width: `${Math.min(100, (budget.spent / budget.budget) * 100)}%` }}
+                          />
+                        </div>
+                        <div className="grid gap-2 sm:grid-cols-2">
+                          {budget.suggestions.slice(0, 4).map((s, i) => (
+                            <div key={i} className="flex items-start gap-2 rounded-xl bg-white/5 p-3 text-xs text-gray-300">
+                              <span className="mt-0.5 text-brand-accent">✓</span>
+                              {s}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === 'Analytics' && analytics && (
+              <div className="space-y-6">
+                <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+                  <h2 className="mb-4 text-xl font-bold">Click Trend</h2>
+                  <div className="h-72 w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={trend} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                        <defs>
+                          <linearGradient id="colorClicks" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#f9a826" stopOpacity={0.4} />
+                            <stop offset="95%" stopColor="#f9a826" stopOpacity={0} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                        <XAxis dataKey="day" tick={{ fill: '#a1a1aa', fontSize: 12 }} />
+                        <YAxis tick={{ fill: '#a1a1aa', fontSize: 12 }} />
+                        <Tooltip contentStyle={{ backgroundColor: '#18181b', border: 'none', borderRadius: '0.5rem' }} />
+                        <Area type="monotone" dataKey="clicks" stroke="#f9a826" fillOpacity={1} fill="url(#colorClicks)" />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+
+                <div className="grid gap-6 lg:grid-cols-2">
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 card-hover">
+                    <h2 className="mb-4 text-xl font-bold">Top Stores</h2>
+                    <div className="h-72 w-full">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={analytics.topStores} margin={{ top: 8, right: 8, left: 0, bottom: 24 }}>
+                          <XAxis dataKey="name" tick={{ fill: '#a1a1aa', fontSize: 10 }} angle={-25} textAnchor="end" />
+                          <YAxis tick={{ fill: '#a1a1aa', fontSize: 10 }} />
+                          <Tooltip contentStyle={{ backgroundColor: '#18181b', border: 'none', borderRadius: '0.5rem' }} cursor={{ fill: 'rgba(255,255,255,0.05)' }} />
+                          <Bar dataKey="clicks" fill="#f9a826" radius={[4, 4, 0, 0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 card-hover">
+                    <h2 className="mb-4 text-xl font-bold">Category Breakdown</h2>
+                    <div className="h-72 w-full">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie data={chartData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={90} label>
+                            {chartData.map((_, i) => (
+                              <Cell key={`cell-${i}`} fill={COLORS[i % COLORS.length]} />
+                            ))}
+                          </Pie>
+                          <Tooltip contentStyle={{ backgroundColor: '#18181b', border: 'none', borderRadius: '0.5rem' }} />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'Basket' && (
+              <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 lg:p-8">
+                <div className="mb-2 flex items-center gap-2">
+                  <span className="rounded-full bg-brand-accent/10 p-2 text-brand-accent">
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                  </span>
+                  <h2 className="text-2xl font-bold">Real-Time Basket Optimizer</h2>
+                </div>
+                <p className="mb-6 text-sm text-gray-400">Compare your basket total across Blinkit, Instamart, BigBasket, Zepto and more.</p>
+                <div className="flex flex-col gap-3 md:flex-row">
+                  <input
+                    type="text"
+                    value={basketInput}
+                    onChange={(e) => setBasketInput(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && runBasketOptimizer()}
+                    placeholder="e.g. milk, bread, eggs, rice, apples"
+                    className="flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none focus:border-brand-accent transition-colors"
+                  />
+                  <button
+                    onClick={runBasketOptimizer}
+                    className="rounded-xl bg-brand-accent px-6 py-3 text-sm font-bold text-brand-900 hover:bg-brand-accent-hover"
+                  >
+                    Optimize Now
+                  </button>
+                </div>
+
+                {basketResult && (
+                  <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                    {basketResult.quotes.slice(0, 4).map((q, i) => (
+                      <div
+                        key={q.store}
+                        className={`rounded-2xl border p-5 ${i === 0 ? 'border-emerald-500/50 bg-emerald-900/10' : 'border-white/10 bg-white/[0.03] card-hover'}`}
+                      >
+                        <div className="mb-2 flex items-center justify-between">
+                          <span className="font-bold">{q.store}</span>
+                          {i === 0 && <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-400">BEST</span>}
+                        </div>
+                        <p className="text-3xl font-bold">{formatPrice(q.total)}</p>
+                        <p className="mt-1 text-xs text-gray-400">{q.items.length} items</p>
+                        <a
+                          href={q.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-4 inline-block rounded-lg bg-white/5 px-3 py-1.5 text-xs text-white hover:bg-white/10"
+                        >
+                          Go to store
+                        </a>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === 'Bundles' && (
+              <div className="space-y-6">
+                <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 lg:p-8">
+                  <div className="mb-2 flex items-center gap-2">
+                    <span className="rounded-full bg-brand-accent/10 p-2 text-brand-accent">
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m0 0l8 4m8-4v10l-8 4m0-10l8-4m-8 4v10" />
+                      </svg>
+                    </span>
+                    <h2 className="text-2xl font-bold">Predictive Bundling</h2>
+                  </div>
+                  <p className="mb-5 text-sm text-gray-400">AI-built bundles that give you the best dynamic price.</p>
+                  <div className="flex flex-col gap-3 md:flex-row">
+                    <input
+                      type="text"
+                      value={bundleInput}
+                      onChange={(e) => setBundleInput(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && runBundleBuilder()}
+                      placeholder="e.g. milk, bread, eggs, rice"
+                      className="flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none focus:border-brand-accent transition-colors"
+                    />
+                    <button
+                      onClick={runBundleBuilder}
+                      className="rounded-xl bg-brand-accent px-6 py-3 text-sm font-bold text-brand-900 hover:bg-brand-accent-hover"
+                    >
+                      Build Bundles
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                  {bundles.map((b, i) => (
+                    <div key={i} className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 card-hover">
+                      <h3 className="mb-3 font-bold text-lg">{b.name}</h3>
+                      <div className="mb-4 flex flex-wrap gap-1">
+                        {b.items.map((item) => (
+                          <span key={item} className="rounded-md bg-white/5 px-2 py-1 text-[10px] text-gray-300">{item}</span>
+                        ))}
+                      </div>
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-2xl font-bold text-emerald-400">{formatPrice(b.bundlePrice)}</span>
+                        <span className="text-sm text-zinc-500 line-through">{formatPrice(b.originalPrice)}</span>
+                      </div>
+                      <p className="mt-2 text-xs text-gray-400">Demand score: {b.demandScore}%</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'Assistant' && (
+              <div className="mx-auto max-w-3xl rounded-2xl border border-white/10 bg-white/[0.03] p-6 lg:p-8">
+                <div className="mb-4 flex items-center gap-2">
+                  <span className="rounded-full bg-brand-accent/10 p-2 text-brand-accent">
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M8 10h8m-8 4h5m-9 8l3-3h10a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12z" />
+                    </svg>
+                  </span>
+                  <h2 className="text-2xl font-bold">AI Shopping Assistant</h2>
+                </div>
+                <div className="mb-4 min-h-[6rem] rounded-xl bg-zinc-900/70 p-4 text-sm leading-relaxed text-zinc-200">
+                  {assistant}
+                </div>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={assistantInput}
+                    onChange={(e) => setAssistantInput(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && askAssistant()}
+                    placeholder="Ask SROne AI..."
+                    className="flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none focus:border-brand-accent transition-colors"
+                  />
+                  <button
+                    onClick={askAssistant}
+                    className="rounded-xl bg-brand-accent px-6 py-3 text-sm font-bold text-brand-900 hover:bg-brand-accent-hover"
+                  >
+                    Ask
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'Alerts' && (
+              <div className="mx-auto max-w-3xl rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.04] to-transparent p-6 lg:p-8">
+                <div className="mb-2 flex items-center gap-2">
+                  <span className="rounded-full bg-brand-accent/10 p-2 text-brand-accent">
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                    </svg>
+                  </span>
+                  <h2 className="text-2xl font-bold">Priority WhatsApp Alert</h2>
+                </div>
+                <p className="mb-6 text-sm text-gray-400">Premium users get instant WhatsApp notifications when the target price is reached.</p>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <input
+                    type="text"
+                    value={alert.deal}
+                    onChange={(e) => setAlert({ ...alert, deal: e.target.value })}
+                    placeholder="Deal name"
+                    className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none focus:border-brand-accent transition-colors"
+                  />
+                  <input
+                    type="number"
+                    value={alert.target}
+                    onChange={(e) => setAlert({ ...alert, target: e.target.value })}
+                    placeholder="Target price"
+                    className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none focus:border-brand-accent transition-colors"
+                  />
+                  <input
+                    type="tel"
+                    value={alert.phone}
+                    onChange={(e) => setAlert({ ...alert, phone: e.target.value })}
+                    placeholder="WhatsApp number"
+                    className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none focus:border-brand-accent transition-colors"
+                  />
+                  <select
+                    value={alert.priority}
+                    onChange={(e) => setAlert({ ...alert, priority: e.target.value as 'standard' | 'priority' })}
+                    className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none focus:border-brand-accent transition-colors"
+                  >
+                    <option value="priority">Priority (instant)</option>
+                    <option value="standard">Standard</option>
+                  </select>
+                </div>
+                <button
+                  onClick={setPriceAlert}
+                  className="mt-5 rounded-xl bg-emerald-600 px-8 py-3 text-sm font-bold text-white hover:bg-emerald-700"
+                >
+                  Set Alert
+                </button>
+                {alert.status && <p className="mt-3 text-sm text-emerald-400">{alert.status}</p>}
+              </div>
+            )}
           </div>
-        )}
-      </div>
-    </main>
-  );
-}
+        </section>
+      </main>
 
-function StatCard({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
-  return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-      <p className="text-xs text-zinc-400">{label}</p>
-      <p className={`mt-1 text-2xl font-bold ${accent ? 'text-emerald-400' : 'text-white'}`}>{value}</p>
+      <Footer />
     </div>
   );
 }
