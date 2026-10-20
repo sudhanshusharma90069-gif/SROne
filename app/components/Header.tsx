@@ -67,6 +67,18 @@ export default function Header() {
             <a href="#about" className="text-sm font-medium text-gray-300 hover:text-brand-accent transition-colors">
               About
             </a>
+            <a href="/dashboard" className="text-sm font-medium text-gray-300 hover:text-brand-accent transition-colors">
+              Dashboard
+            </a>
+            <a href="/premium" className="text-sm font-medium text-brand-accent hover:text-white transition-colors">
+              Premium
+            </a>
+            <a
+              href="/login"
+              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 transition-colors"
+            >
+              Sign in
+            </a>
           </nav>
         </div>
       </div>

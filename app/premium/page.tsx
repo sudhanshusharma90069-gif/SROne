@@ -29,6 +29,7 @@ interface BudgetData {
 }
 
 export default function PremiumDashboard() {
+  const [user, setUser] = useState<{ name: string; role: string } | null>(null);
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [budget, setBudget] = useState<BudgetData | null>(null);
@@ -36,6 +37,9 @@ export default function PremiumDashboard() {
   const [assistantInput, setAssistantInput] = useState('');
 
   useEffect(() => {
+    fetch('/api/auth/me')
+      .then((r) => r.json())
+      .then((d) => setUser(d.user));
     fetch('/api/analytics').then((r) => r.json()).then(setAnalytics);
     fetch('/api/recommendations', {
       method: 'POST',
@@ -48,6 +52,11 @@ export default function PremiumDashboard() {
       .then((d) => setRecommendations(d.recommendations || []));
     fetch('/api/budget').then((r) => r.json()).then(setBudget);
   }, []);
+
+  async function logout() {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    window.location.href = '/login';
+  }
 
   async function askAssistant() {
     const res = await fetch('/api/assistant', {
@@ -63,8 +72,18 @@ export default function PremiumDashboard() {
   return (
     <main className="min-h-screen bg-zinc-950 px-4 py-8 text-zinc-100">
       <div className="mx-auto max-w-5xl">
-        <h1 className="mb-2 text-3xl font-bold">Premium AI Dashboard</h1>
-        <p className="mb-8 text-sm text-zinc-400">Backend-powered insights, predictions and optimization.</p>
+        <div className="mb-6 flex items-start justify-between">
+          <div>
+            <h1 className="mb-2 text-3xl font-bold">Premium AI Dashboard</h1>
+            <p className="text-sm text-zinc-400">Welcome, {user?.name || 'Guest'} · {user?.role?.toUpperCase()}</p>
+          </div>
+          <button
+            onClick={logout}
+            className="rounded-lg border border-white/10 px-4 py-2 text-sm font-semibold text-zinc-300 hover:border-white/30 hover:text-white"
+          >
+            Logout
+          </button>
+        </div>
 
         {analytics && (
           <div className="mb-8 grid grid-cols-2 gap-4 md:grid-cols-4">
