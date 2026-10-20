@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
     if (!email || !name || !password) {
       return NextResponse.json({ error: 'Email, name and password are required' }, { status: 400 });
     }
-    const result = registerUser(email, name, password, role || 'free');
+    const result = await registerUser(email, name, password, role || 'free');
     if ('error' in result) {
       return NextResponse.json({ error: result.error }, { status: 400 });
     }
