@@ -97,9 +97,10 @@ export function computeCartPrices(items: string[]): { blinkit: Record<string, nu
   const instamart: Record<string, number> = {};
 
   items.forEach((raw) => {
-    const name = raw.trim().toLowerCase();
+    const name = raw.trim();
     if (!name) return;
-    const base = (hashItem(name) % 250) + 20;
+    const key = name.toLowerCase();
+    const base = (hashItem(key) % 250) + 20;
     blinkit[name] = Math.round(base * 0.95);
     instamart[name] = Math.round(base * 1.05);
   });
