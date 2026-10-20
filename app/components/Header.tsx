@@ -104,6 +104,45 @@ export default function Header() {
               />
             </div>
 
+            <div className="flex flex-wrap gap-2 border-b border-white/10 pb-3">
+              <a
+                href="/"
+                className="rounded-lg bg-white/5 px-3 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-white"
+              >
+                Home
+              </a>
+              <a
+                href="/#deals"
+                className="rounded-lg bg-white/5 px-3 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-white"
+              >
+                Deals
+              </a>
+              <a
+                href="/#about"
+                className="rounded-lg bg-white/5 px-3 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-white"
+              >
+                About
+              </a>
+              <a
+                href="/dashboard"
+                className="rounded-lg bg-white/5 px-3 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-white"
+              >
+                Dashboard
+              </a>
+              <a
+                href="/premium"
+                className="rounded-lg bg-brand-accent/10 px-3 py-2 text-sm text-brand-accent hover:bg-brand-accent/20"
+              >
+                Premium
+              </a>
+              <a
+                href="/login"
+                className="rounded-lg bg-indigo-600 px-3 py-2 text-sm font-semibold text-white"
+              >
+                Sign in
+              </a>
+            </div>
+
             {filteredCategories.length === 0 && (
               <p className="text-sm text-gray-400 py-2">No matching stores or categories.</p>
             )}
