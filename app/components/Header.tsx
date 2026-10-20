@@ -1,17 +1,37 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { storeCategories } from '../lib/stores';
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [openCategory, setOpenCategory] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
 
   useEffect(() => {
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js').catch(() => {});
     }
   }, []);
+
+  const query = search.toLowerCase().trim();
+  const filteredCategories = useMemo(() => {
+    if (!query) return storeCategories;
+    return storeCategories
+      .map((c) => ({
+        ...c,
+        stores: c.stores.filter(
+          (s) =>
+            s.name.toLowerCase().includes(query) ||
+            s.description.toLowerCase().includes(query)
+        ),
+      }))
+      .filter(
+        (c) =>
+          c.stores.length > 0 ||
+          c.name.toLowerCase().includes(query)
+      );
+  }, [query]);
 
   return (
     <header className="sticky top-0 z-50 glass">
@@ -53,8 +73,30 @@ export default function Header() {
 
       {menuOpen && (
         <div className="absolute top-full left-0 w-full sm:w-96 max-h-[80vh] overflow-y-auto glass border-t border-white/10">
-          <div className="p-4 space-y-1">
-            {storeCategories.map((category) => (
+          <div className="p-4 space-y-3">
+            <div className="relative">
+              <svg
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 105.65 5.65a7.5 7.5 0 0011 11z" />
+              </svg>
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search categories & stores..."
+                className="w-full bg-white/5 border border-white/10 rounded-lg pl-9 pr-3 py-2 text-sm text-white placeholder-gray-500 outline-none focus:border-brand-accent transition-colors"
+              />
+            </div>
+
+            {filteredCategories.length === 0 && (
+              <p className="text-sm text-gray-400 py-2">No matching stores or categories.</p>
+            )}
+
+            {filteredCategories.map((category) => (
               <div key={category.name}>
                 <button
                   onClick={() => setOpenCategory(openCategory === category.name ? null : category.name)}
@@ -73,7 +115,7 @@ export default function Header() {
                 </button>
                 {openCategory === category.name && (
                   <div className="ml-4 mb-2 space-y-1">
-                    {category.stores.map((store) => (
+                    {(category.stores.length > 0 ? category.stores : storeCategories.find((c) => c.name === category.name)?.stores || []).map((store) => (
                       <a
                         key={store.name}
                         href={store.link}

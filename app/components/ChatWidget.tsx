@@ -2,9 +2,16 @@
 
 import { useEffect, useRef, useState } from 'react';
 
+interface StoreLink {
+  name: string;
+  link: string;
+  category?: string;
+}
+
 interface Message {
   role: 'user' | 'assistant';
   text: string;
+  stores?: StoreLink[];
 }
 
 const suggestions = [
@@ -12,6 +19,7 @@ const suggestions = [
   'Sasta hotel kahan milega?',
   'Flight booking sites?',
   'Grocery offers?',
+  'Recharge cashback?',
 ];
 
 export default function ChatWidget() {
@@ -19,18 +27,25 @@ export default function ChatWidget() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
-      text: 'Hi! I\'m the SROne AI assistant. Ask me anything — stores, deals, hotels, travel. हिंदी में भी पूछ सकते हैं!',
+      text: "Hi! I'm the SROne AI assistant. Ask me anything — stores, deals, hotels, travel. हिंदी में भी पूछ सकते हैं!",
     },
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [listening, setListening] = useState(false);
   const messagesRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const recognitionRef = useRef<any>(null);
 
   useEffect(() => {
-    messagesRef.current?.scrollTo({ top: messagesRef.current.scrollHeight });
-  }, [messages]);
+    messagesRef.current?.scrollTo({ top: messagesRef.current.scrollHeight, behavior: 'smooth' });
+  }, [messages, open]);
+
+  useEffect(() => {
+    if (open && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [open]);
 
   const send = async (text?: string) => {
     const msg = (text ?? input).trim();
@@ -45,7 +60,9 @@ export default function ChatWidget() {
         body: JSON.stringify({ message: msg }),
       });
       const data = await res.json();
-      setMessages((m) => [...m, { role: 'assistant', text: data.reply || 'Sorry, try again.' }]);
+      const reply = data?.text || data?.reply || 'Sorry, try again.';
+      const stores = data?.stores || [];
+      setMessages((m) => [...m, { role: 'assistant', text: reply, stores }]);
     } catch {
       setMessages((m) => [...m, { role: 'assistant', text: 'Network error — please try again.' }]);
     } finally {
@@ -61,7 +78,10 @@ export default function ChatWidget() {
     }
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SR) {
-      setMessages((m) => [...m, { role: 'assistant', text: 'Voice input is not supported in this browser. Please type instead.' }]);
+      setMessages((m) => [
+        ...m,
+        { role: 'assistant', text: 'Voice input is not supported in this browser. Please type instead.' },
+      ]);
       return;
     }
     const rec = new SR();
@@ -78,6 +98,8 @@ export default function ChatWidget() {
     rec.start();
     setListening(true);
   };
+
+  const close = () => setOpen(false);
 
   return (
     <>
@@ -103,16 +125,45 @@ export default function ChatWidget() {
             <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
             <span className="text-sm font-bold text-white">SROne AI Assistant</span>
             <span className="ml-auto text-[10px] text-gray-500 uppercase tracking-wider">EN · हिं</span>
+            <button onClick={close} aria-label="Close chat" className="text-gray-400 hover:text-white ml-2">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
           </div>
           <div ref={messagesRef} className="flex-1 overflow-y-auto p-4 space-y-3">
             {messages.map((m, i) => (
               <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div
-                  className={`max-w-[80%] px-3 py-2 rounded-xl text-sm leading-relaxed ${
+                  className={`max-w-[90%] px-3 py-2 rounded-xl text-sm leading-relaxed ${
                     m.role === 'user' ? 'bg-brand-accent text-brand-900' : 'bg-white/10 text-gray-200'
                   }`}
                 >
-                  {m.text}
+                  <p className="whitespace-pre-wrap break-words">{m.text}</p>
+                  {m.stores && m.stores.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {m.stores.map((s) => (
+                        <a
+                          key={s.name}
+                          href={s.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center px-2.5 py-1 rounded-full bg-brand-accent/20 text-brand-accent text-xs font-semibold hover:bg-brand-accent/30 transition-colors"
+                          onClick={() => {
+                            try {
+                              fetch('/api/track', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ store: s.name, deal: null, type: 'chat_click' }),
+                              });
+                            } catch {}
+                          }}
+                        >
+                          {s.name}
+                        </a>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
@@ -129,7 +180,17 @@ export default function ChatWidget() {
                 ))}
               </div>
             )}
-            {loading && <p className="text-xs text-gray-500">AI is thinking...</p>}
+            {loading && (
+              <div className="flex justify-start">
+                <div className="px-3 py-2 rounded-xl bg-white/10 text-gray-200 text-sm">
+                  <span className="inline-flex gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce [animation-delay:0.2s]" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce [animation-delay:0.4s]" />
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
           <div className="p-3 border-t border-white/10 flex gap-2">
             <button
@@ -146,9 +207,13 @@ export default function ChatWidget() {
               </svg>
             </button>
             <input
+              ref={inputRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && send()}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') send();
+                if (e.key === 'Escape') close();
+              }}
               placeholder="Type or speak... / हिंदी में पूछें"
               className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 outline-none focus:border-brand-accent"
             />

@@ -1,74 +1,110 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { Store } from '../../lib/types';
 import { storeCategories } from '../../lib/stores';
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+
+const allStores: Store[] = storeCategories.flatMap((c) =>
+  c.stores.map((s) => ({ ...s, category: c.name }))
+);
 
 const storeList = storeCategories
   .map((c) => `${c.name}: ${c.stores.map((s) => s.name).join(', ')}`)
   .join('\n');
 
-function isHindi(q: string): boolean {
-  return /[\u0900-\u097F]/.test(q) || /\b(kya|kahan|chahiye|mujhe|sasta|sasti|kaise|kab|kitna|batao|btao|dikhao|milega|milegi)\b/i.test(q);
+const stopWords = new Set([
+  'the', 'a', 'an', 'is', 'are', 'was', 'were', 'be', 'been', 'being',
+  'and', 'or', 'but', 'for', 'with', 'without', 'from', 'to', 'in', 'on',
+  'at', 'by', 'of', 'about', 'like', 'want', 'need', 'best', 'cheap', 'cheapest',
+  'good', 'top', 'latest', 'new', 'kya', 'koi', 'mujhe', 'chahiye', 'batao', 'kaunsa',
+  'kahan', 'kaise', 'kab', 'kitna', 'hai', 'hain', 'ho', 'mein', 'se', 'ko', 'ki', 'ke',
+  'liye', 'batao', 'dikhao', 'sasta', 'sasti', 'tara', 'karo', 'kare', 'main', 'hi',
+  'please', 'plz', 'show', 'find', 'give', 'tell', 'suggest', 'recommend', 'looking',
+  'search', 'i', 'you', 'we', 'us', 'my', 'your', 'me', 'he', 'she', 'it', 'they',
+]);
+
+function tokenize(q: string): string[] {
+  return q
+    .toLowerCase()
+    .replace(/[^\w\s]/g, ' ')
+    .split(/\s+/)
+    .filter((w) => w.length > 2 && !stopWords.has(w));
 }
 
-function fallbackAnswer(message: string): string {
-  const q = message.toLowerCase();
-  const hindi = isHindi(q);
-  const hindiReplies: [RegExp, string][] = [
-    [/hotel|होटल|ठहरना/i, 'Hotel booking ke liye OYO Rooms, Booking.com, Airbnb ya MakeMyTrip Hotels dekhein — ☰ menu mein "Hotel Booking" category hai.'],
-    [/flight|ट्रेन|बस|train|bus|travel|यात्रा/i, 'Travel booking ke liye MakeMyTrip, Goibibo, Yatra, Cleartrip, EaseMyTrip, IRCTC ya redBus dekhein — ☰ menu mein "Travel Booking" hai.'],
-    [/food|पिज़्ज़ा|pizza|खाना|restaurant/i, 'Food delivery ke liye Swiggy, Zomato, Domino\'s ya Rominos dekhein — ☰ menu mein "Food Delivery" hai.'],
-    [/grocer|किराना|सामान/i, 'Grocery ke liye Blinkit, Zepto, BigBasket ya JioMart dekhein — ☰ menu mein "Grocery & Quick Commerce" hai.'],
-    [/fashion|kapde|कपड़े|cloth/i, 'Fashion ke liye Myntra, Ajio, Tata CLiQ ya LimeRoad dekhein — ☰ menu mein "Fashion & Lifestyle" hai.'],
-    [/beauty|मेकअप|makeup/i, 'Beauty products ke liye Nykaa ya Purplle dekhein — ☰ menu mein hai.'],
-    [/cab|taxi|ride|टैक्सी/i, 'Rides ke liye Uber ya Rapido dekhein — ☰ menu mein "Travel & Mobility" hai.'],
-    [/deal|offer|discount|ऑफर|डिस्काउंट/i, 'Is page par neeche sabhi AI-selected best deals hain — 35+ stores ke discounts dekhein!'],
-  ];
-  if (hindi) {
-    for (const [re, reply] of hindiReplies) {
-      if (re.test(message)) return reply;
-    }
-    const matches = storeCategories
-      .flatMap((c) => c.stores.map((s) => ({ ...s, category: c.name })))
-      .filter((s) => q.includes(s.name.toLowerCase()));
-    if (matches.length > 0) {
-      return `Main ${matches.slice(0, 3).map((s) => s.name).join(', ')} suggest karta hoon. In stores pe ☰ menu se seedha jaa sakte hain.`;
-    }
-    return 'Main aapko shopping, grocery, food, hotel aur travel deals mein help kar sakta hoon. ☰ menu se saari categories dekhein, ya neeche best deals scroll karein.';
+function isHindi(q: string): boolean {
+  return /[\u0900-\u097F]/.test(q) || /\b(kya|kahan|chahiye|mujhe|sasta|sasti|kaise|kab|kitna|batao|btao|dikhao|milega|milegi|konsa|konse|kya h|kya hai|kaun|kyu|kya ye|kya vo)\b/i.test(q);
+}
+
+function findStores(query: string) {
+  const q = query.toLowerCase().trim();
+  const words = tokenize(q);
+  if (words.length === 0 && q.length > 0) {
+    words.push(q);
   }
 
-  const matches = storeCategories
-    .flatMap((c) => c.stores.map((s) => ({ ...s, category: c.name })))
-    .filter(
-      (s) =>
-        q.includes(s.name.toLowerCase()) ||
-        q.includes(s.name.toLowerCase().split(' ')[0]) ||
-        s.description.toLowerCase().split(' ').some((w) => w.length > 5 && q.includes(w))
-    );
+  const scored = allStores.map((s) => {
+    let score = 0;
+    const name = s.name.toLowerCase();
+    const desc = s.description.toLowerCase();
+    const cat = (s.category || '').toLowerCase();
 
-  if (matches.length > 0) {
-    const top = matches.slice(0, 3);
-    return (
-      `I recommend checking ${top.map((s) => s.name).join(', ')}. ` +
-      top.map((s) => `${s.name}: ${s.description}`).join(' ') +
-      ' Open the menu (☰) to visit these stores directly.'
-    );
+    words.forEach((w) => {
+      if (name.startsWith(w)) score += 12;
+      else if (name.includes(w)) score += 8;
+      else if (cat.startsWith(w)) score += 5;
+      else if (cat.includes(w)) score += 3;
+      else if (desc.includes(w)) score += 1;
+    });
+
+    return { ...s, score };
+  });
+
+  return scored.filter((s) => s.score > 0).sort((a, b) => b.score - a.score).slice(0, 5);
+}
+
+function formatReply(query: string, stores: Store[]): { text: string; stores: Store[] } {
+  const hindi = isHindi(query);
+  const q = query.toLowerCase();
+
+  if (stores.length > 0) {
+    const names = stores.map((s) => s.name).join(', ');
+    const text = hindi
+      ? `Aapke liye best options: ${names}. Neeche kisi bhi store pe click karein aur apna order ya booking shuru karein.`
+      : `Here are the best options for you: ${names}. Click any store below to start shopping or booking.`;
+    return { text, stores };
   }
 
-  if (q.includes('hotel')) return 'For hotel bookings check OYO Rooms, Booking.com, Airbnb or MakeMyTrip Hotels — find them under "Hotel Booking" in the ☰ menu.';
-  if (q.includes('flight') || q.includes('train') || q.includes('bus') || q.includes('travel'))
-    return 'For travel bookings check MakeMyTrip, Goibibo, Yatra, Cleartrip, EaseMyTrip, IRCTC or redBus under "Travel Booking" in the ☰ menu.';
-  if (q.includes('food') || q.includes('pizza') || q.includes('restaurant'))
-    return 'For food delivery check Swiggy, Zomato, Domino\'s or Rominos under "Food Delivery" in the ☰ menu.';
-  if (q.includes('grocer')) return 'For groceries check Blinkit, Zepto, BigBasket or JioMart under "Grocery & Quick Commerce" in the ☰ menu.';
-  if (q.includes('fashion') || q.includes('cloth'))
-    return 'For fashion check Myntra, Ajio, Tata CLiQ or LimeRoad under "Fashion & Lifestyle" in the ☰ menu.';
-  if (q.includes('beauty') || q.includes('makeup')) return 'For beauty products check Nykaa or Purplle in the ☰ menu.';
-  if (q.includes('cab') || q.includes('ride') || q.includes('taxi')) return 'For rides check Uber or Rapido under "Travel & Mobility" in the ☰ menu.';
-  if (q.includes('deal') || q.includes('offer') || q.includes('discount'))
-    return 'All AI-classified best deals are on this page below — scroll to see discounts from 35+ stores.';
+  if (q.includes('hello') || q.includes('hi') || q.includes('hey') || q.includes('namaste')) {
+    return {
+      text: hindi
+        ? 'Namaste! Main SROne AI assistant hoon. Aapko shopping, grocery, food, hotel, travel, recharge, entertainment — kisi bhi category mein help kar sakta hoon. Apna sawal poochhein!'
+        : "Hi there! I'm the SROne AI assistant. Ask me about shopping, groceries, food delivery, hotels, travel, recharge, entertainment, or any deals — I'm here to help!",
+      stores: [],
+    };
+  }
 
-  return 'I can help you find deals across shopping, groceries, food delivery, hotels, travel and more. Open the ☰ menu (top-right) to browse all 11 categories and 35+ stores, or scroll down for today\'s AI-picked deals.';
+  const categoryMatch = storeCategories.find((c) => q.includes(c.name.toLowerCase()));
+  if (categoryMatch) {
+    const names = categoryMatch.stores.map((s) => s.name).slice(0, 6).join(', ');
+    return {
+      text: hindi
+        ? `${categoryMatch.name} ke liye yeh stores hain: ${names}. Menu se bhi seedhe jaa sakte hain.`
+        : `For ${categoryMatch.name}, check out: ${names}. You can also browse them from the menu.`,
+      stores: categoryMatch.stores.slice(0, 6),
+    };
+  }
+
+  return {
+    text: hindi
+      ? 'Main 70+ top stores aur 17 categories mein aapki madad kar sakta hoon. Shopping, grocery, food, hotel, travel, recharge, entertainment — jo chahiye bataiye!'
+      : 'I can help you across 70+ top stores and 17 categories — shopping, groceries, food delivery, hotels, travel, recharge, entertainment and more. Just type what you need!',
+    stores: [],
+  };
+}
+
+function fallbackAnswer(message: string): { text: string; stores: typeof allStores } {
+  const stores = findStores(message);
+  return formatReply(message, stores);
 }
 
 export async function POST(req: NextRequest) {
@@ -78,8 +114,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'message required' }, { status: 400 });
     }
 
+    const fallback = fallbackAnswer(message);
+
     if (!OPENAI_API_KEY) {
-      return NextResponse.json({ reply: fallbackAnswer(message) });
+      return NextResponse.json(fallback);
     }
 
     const res = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -93,17 +131,21 @@ export async function POST(req: NextRequest) {
         messages: [
           {
             role: 'system',
-            content: `You are SROne's shopping assistant. Help customers find the best stores and deals in India. Always reply in the SAME language the user writes in (English, Hindi, or Hinglish). Keep answers short, friendly, and suggest specific stores. Available categories and stores:\n${storeList}`,
+            content: `You are SROne's helpful shopping assistant. Customers are asking for the best stores and deals in India. Always reply in the SAME language the user writes in (English, Hindi, or Hinglish). Keep answers short, friendly, and suggest specific stores from the list. Available categories and stores:\n${storeList}`,
           },
           { role: 'user', content: message },
         ],
-        max_tokens: 150,
+        max_tokens: 160,
       }),
     });
     const data = await res.json();
     const reply = data?.choices?.[0]?.message?.content?.trim();
-    return NextResponse.json({ reply: reply || fallbackAnswer(message) });
+    const stores = findStores(message);
+    return NextResponse.json({ text: reply || fallback.text, stores });
   } catch {
-    return NextResponse.json({ reply: 'Sorry, I could not process that. Please try again.' });
+    return NextResponse.json({
+      text: 'Sorry, I could not process that. Please try again.',
+      stores: [],
+    });
   }
 }
