@@ -18,6 +18,7 @@ import {
 import Header from '../components/Header';
 import FestivalBanner from '../components/FestivalBanner';
 import Footer from '../sections/Footer';
+import Deals from '../sections/Deals';
 import { formatPrice } from '../lib/prices';
 
 interface Recommendation {
@@ -60,7 +61,7 @@ interface Bundle {
   demandScore: number;
 }
 
-const TABS = ['Overview', 'Analytics', 'Basket', 'Bundles', 'Assistant', 'Alerts'];
+const TABS = ['Overview', 'Deals', 'Analytics', 'Basket', 'Bundles', 'Assistant', 'Alerts'];
 const COLORS = ['#f9a826', '#10b981', '#6366f1', '#ec4899', '#06b6d4', '#f97316'];
 
 const trend = [
@@ -242,6 +243,12 @@ export default function PremiumDashboard() {
 
         <section className="py-16 lg:py-24 bg-brand-800/30 min-h-[50vh]">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            {activeTab === 'Deals' && (
+              <div className="-mx-4 sm:-mx-6 lg:-mx-8">
+                <Deals />
+              </div>
+            )}
+
             {activeTab === 'Overview' && (
               <div className="space-y-10">
                 <div>
