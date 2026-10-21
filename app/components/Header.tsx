@@ -7,12 +7,21 @@ export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [openCategory, setOpenCategory] = useState<string | null>(null);
   const [search, setSearch] = useState('');
+  const [user, setUser] = useState<{ name: string; role: string } | null>(null);
 
   useEffect(() => {
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js').catch(() => {});
     }
+    fetch('/api/auth/me')
+      .then((r) => r.json())
+      .then((d) => setUser(d.user));
   }, []);
+
+  async function logout() {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    window.location.href = '/';
+  }
 
   const query = search.toLowerCase().trim();
   const filteredCategories = useMemo(() => {
@@ -73,12 +82,24 @@ export default function Header() {
             <a href="/premium" className="text-sm font-medium text-brand-accent hover:text-white transition-colors">
               Premium
             </a>
-            <a
-              href="/login"
-              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 transition-colors"
-            >
-              Sign in
-            </a>
+            {user ? (
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-gray-400 hidden lg:inline">{user.name}</span>
+                <button
+                  onClick={logout}
+                  className="rounded-lg bg-zinc-700 px-4 py-2 text-sm font-semibold text-white hover:bg-zinc-600 transition-colors"
+                >
+                  Logout
+                </button>
+              </div>
+            ) : (
+              <a
+                href="/login"
+                className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 transition-colors"
+              >
+                Login
+              </a>
+            )}
           </nav>
         </div>
       </div>
@@ -135,12 +156,21 @@ export default function Header() {
               >
                 Premium
               </a>
-              <a
-                href="/login"
-                className="rounded-lg bg-indigo-600 px-3 py-2 text-sm font-semibold text-white"
-              >
-                Sign in
-              </a>
+              {user ? (
+                <button
+                  onClick={logout}
+                  className="rounded-lg bg-zinc-700 px-3 py-2 text-sm font-semibold text-white text-left"
+                >
+                  Logout
+                </button>
+              ) : (
+                <a
+                  href="/login"
+                  className="rounded-lg bg-indigo-600 px-3 py-2 text-sm font-semibold text-white"
+                >
+                  Login
+                </a>
+              )}
             </div>
 
             {filteredCategories.length === 0 && (

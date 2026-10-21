@@ -1,12 +1,21 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [redirect, setRedirect] = useState('/dashboard');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      const r = url.searchParams.get('redirect');
+      if (r) setRedirect(r);
+    }
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -22,7 +31,8 @@ export default function LoginPage() {
       if (!res.ok) {
         setError(data.error || 'Login failed');
       } else {
-        window.location.href = data.user.role === 'premium' ? '/premium' : '/dashboard';
+        const target = data.user.role === 'premium' ? redirect : '/dashboard';
+        window.location.href = target;
       }
     } catch {
       setError('Network error');
@@ -34,7 +44,7 @@ export default function LoginPage() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-zinc-950 px-4">
       <div className="w-full max-w-md rounded-2xl border border-white/10 bg-white/5 p-8 text-zinc-100">
-        <h1 className="mb-2 text-2xl font-bold">Sign in to SROne</h1>
+        <h1 className="mb-2 text-2xl font-bold">Login to SROne</h1>
         <p className="mb-6 text-sm text-zinc-400">Free and premium accounts available.</p>
         {error && <p className="mb-4 rounded-lg bg-red-500/10 p-2 text-sm text-red-400">{error}</p>}
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -59,12 +69,12 @@ export default function LoginPage() {
             disabled={loading}
             className="w-full rounded-lg bg-indigo-600 py-3 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"
           >
-            {loading ? 'Signing in...' : 'Sign in'}
+            {loading ? 'Logging in...' : 'Login'}
           </button>
         </form>
         <p className="mt-4 text-center text-sm text-zinc-400">
           No account?{' '}
-          <a href="/register" className="text-indigo-400 hover:underline">
+          <a href={`/register${redirect && redirect !== '/dashboard' ? `?redirect=${encodeURIComponent(redirect)}` : ''}`} className="text-indigo-400 hover:underline">
             Register
           </a>
         </p>

@@ -1,14 +1,22 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function RegisterPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState<'free' | 'premium'>('free');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [redirect, setRedirect] = useState('/dashboard');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      const r = url.searchParams.get('redirect');
+      if (r) setRedirect(r);
+    }
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -18,13 +26,13 @@ export default function RegisterPage() {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password, role }),
+        body: JSON.stringify({ name, email, password, role: 'free' }),
       });
       const data = await res.json();
       if (!res.ok) {
         setError(data.error || 'Registration failed');
       } else {
-        window.location.href = data.user.role === 'premium' ? '/premium' : '/dashboard';
+        window.location.href = '/dashboard';
       }
     } catch {
       setError('Network error');
@@ -37,7 +45,7 @@ export default function RegisterPage() {
     <main className="flex min-h-screen items-center justify-center bg-zinc-950 px-4">
       <div className="w-full max-w-md rounded-2xl border border-white/10 bg-white/5 p-8 text-zinc-100">
         <h1 className="mb-2 text-2xl font-bold">Create your SROne account</h1>
-        <p className="mb-6 text-sm text-zinc-400">Start with free or premium.</p>
+        <p className="mb-6 text-sm text-zinc-400">All new accounts start free. Upgrade to premium anytime.</p>
         {error && <p className="mb-4 rounded-lg bg-red-500/10 p-2 text-sm text-red-400">{error}</p>}
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
@@ -64,26 +72,18 @@ export default function RegisterPage() {
             placeholder="Password"
             className="w-full rounded-lg border border-white/10 bg-zinc-900 px-4 py-3 text-sm outline-none focus:border-indigo-500"
           />
-          <select
-            value={role}
-            onChange={(e) => setRole(e.target.value as 'free' | 'premium')}
-            className="w-full rounded-lg border border-white/10 bg-zinc-900 px-4 py-3 text-sm outline-none focus:border-indigo-500"
-          >
-            <option value="free">Free</option>
-            <option value="premium">Premium</option>
-          </select>
           <button
             type="submit"
             disabled={loading}
             className="w-full rounded-lg bg-indigo-600 py-3 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"
           >
-            {loading ? 'Creating account...' : 'Create account'}
+            {loading ? 'Creating account...' : 'Create free account'}
           </button>
         </form>
         <p className="mt-4 text-center text-sm text-zinc-400">
           Already have an account?{' '}
-          <a href="/login" className="text-indigo-400 hover:underline">
-            Sign in
+          <a href={`/login${redirect && redirect !== '/dashboard' ? `?redirect=${encodeURIComponent(redirect)}` : ''}`} className="text-indigo-400 hover:underline">
+            Login
           </a>
         </p>
       </div>
