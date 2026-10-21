@@ -9,15 +9,18 @@ type CashfreeConfig =
     }
   | { error: string };
 
+function clean(value: string | undefined) {
+  if (!value) return '';
+  return value.trim().replace(/^["']|["']$/g, '');
+}
+
 export function getCashfreeConfig(): CashfreeConfig {
-  const clientId =
-    process.env.CASHFREE_CLIENT_ID ||
-    process.env.CASHFREE_APP_ID ||
-    '';
-  const clientSecret =
-    process.env.CASHFREE_CLIENT_SECRET ||
-    process.env.CASHFREE_SECRET_KEY ||
-    '';
+  const clientId = clean(
+    process.env.CASHFREE_CLIENT_ID || process.env.CASHFREE_APP_ID
+  );
+  const clientSecret = clean(
+    process.env.CASHFREE_CLIENT_SECRET || process.env.CASHFREE_SECRET_KEY
+  );
 
   if (!clientId || !clientSecret) {
     return {
