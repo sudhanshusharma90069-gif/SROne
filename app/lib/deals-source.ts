@@ -13,9 +13,9 @@ interface RawDeal {
   ai_summary?: string;
 }
 
-export async function loadSourceDeals(): Promise<RawDeal[]> {
+async function readJsonDeals(filename: string): Promise<RawDeal[]> {
   try {
-    const file = path.join(process.cwd(), 'public', 'deals.json');
+    const file = path.join(process.cwd(), 'public', filename);
     const text = await readFile(file, 'utf-8');
     const parsed = JSON.parse(text);
     return Array.isArray(parsed.deals) ? parsed.deals : [];
@@ -24,8 +24,14 @@ export async function loadSourceDeals(): Promise<RawDeal[]> {
   }
 }
 
-export async function getEnrichedDeals(): Promise<Deal[]> {
-  const raw = await loadSourceDeals();
+export async function loadSourceDeals(): Promise<RawDeal[]> {
+  const products = await readJsonDeals('products.json');
+  if (products.length) return products;
+  return readJsonDeals('deals.json');
+}
+
+export async function getEnrichedDeals(overrideRaw?: RawDeal[]): Promise<Deal[]> {
+  const raw = overrideRaw && overrideRaw.length ? overrideRaw : await loadSourceDeals();
   return raw.map((d) => {
     const { originalPrice, discountedPrice } = computePrices(d);
     return {

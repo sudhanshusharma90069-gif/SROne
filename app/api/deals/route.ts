@@ -13,7 +13,21 @@ export async function GET() {
         return NextResponse.json({ deals: dbDeals });
       }
     } catch {
-      // DB not ready or no deals table yet — fall through to JSON source.
+      // DB not ready or no deals table yet — fall through to JSON/feed source.
+    }
+  }
+
+  if (process.env.DEALS_FEED_URL) {
+    try {
+      const res = await fetch(process.env.DEALS_FEED_URL, { next: { revalidate: 0 } });
+      const data = await res.json();
+      const raw = Array.isArray(data) ? data : data.deals || [];
+      if (raw.length) {
+        const deals = await getEnrichedDeals(raw);
+        return NextResponse.json({ deals });
+      }
+    } catch {
+      // Feed failed — fall through to JSON source.
     }
   }
 

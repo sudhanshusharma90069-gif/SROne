@@ -116,10 +116,12 @@ export default function DealCard({
   deal,
   showAlert = true,
   premiumFeatures = true,
+  isBest = false,
 }: {
   deal: Deal;
   showAlert?: boolean;
   premiumFeatures?: boolean;
+  isBest?: boolean;
 }) {
   const brand = brands[deal.store] || { c1: '#f9a826', c2: '#ff6c37', text: '#1a1a2e' };
   const initial = deal.store.replace(/[^A-Za-z]/g, '').slice(0, 2).toUpperCase();
@@ -198,12 +200,19 @@ export default function DealCard({
               {deal.store}
             </h3>
           </div>
-          <span
-            className="ml-auto px-3 py-1.5 rounded-full text-xs font-extrabold shadow-md shrink-0"
-            style={{ background: 'rgba(0,0,0,0.35)', color: '#ffffff' }}
-          >
-            {deal.discount}
-          </span>
+          <div className="ml-auto flex items-center gap-2 shrink-0">
+            {isBest && (
+              <span className="px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-white/90 text-brand-900 shadow-md">
+                Best Deal
+              </span>
+            )}
+            <span
+              className="px-3 py-1.5 rounded-full text-xs font-extrabold shadow-md"
+              style={{ background: 'rgba(0,0,0,0.35)', color: '#ffffff' }}
+            >
+              {deal.discount}
+            </span>
+          </div>
         </a>
 
         <div className="flex flex-col flex-1 p-5">

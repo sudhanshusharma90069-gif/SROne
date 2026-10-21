@@ -1,0 +1,112 @@
+{
+  "deals": [
+    {
+      "store": "Amazon",
+      "title": "Apple iPhone 15 128GB",
+      "description": "Latest iPhone 15 with A16 chip, USB-C, 48MP main camera.",
+      "link": "https://www.amazon.in/s?k=Apple+iPhone+15+128GB&tag=YOUR_AMAZON_TAG",
+      "category": "Mobiles",
+      "discount": "12% OFF",
+      "ai_summary": "Apple iPhone 15 128GB — latest A16 chip, USB-C and 48MP camera at a discounted price."
+    },
+    {
+      "store": "Flipkart",
+      "title": "Samsung Galaxy S24 5G",
+      "description": "AI-powered flagship with 256GB storage and 50MP camera.",
+      "link": "https://www.flipkart.com/search?q=Samsung+Galaxy+S24+5G&affid=YOUR_FLIPKART_AFFID",
+      "category": "Mobiles",
+      "discount": "18% OFF",
+      "ai_summary": "Samsung Galaxy S24 5G — AI features, 256GB storage and a powerful camera setup."
+    },
+    {
+      "store": "Myntra",
+      "title": "Nike Air Max Running Shoes",
+      "description": "Lightweight breathable running shoes for men and women.",
+      "link": "https://www.myntra.com/search?q=Nike+Air+Max+Running+Shoes",
+      "category": "Fashion",
+      "discount": "45% OFF",
+      "ai_summary": "Nike Air Max running shoes — lightweight, breathable and up to 45% off."
+    },
+    {
+      "store": "AJIO",
+      "title": "Puma Cotton Graphic T-Shirt",
+      "description": "Trendy everyday casual tee with bold Puma branding.",
+      "link": "https://www.ajio.com/search/?query=Puma+Cotton+Graphic+T-Shirt",
+      "category": "Fashion",
+      "discount": "60% OFF",
+      "ai_summary": "Puma cotton graphic tee — trendy casual wear at a big discount."
+    },
+    {
+      "store": "Nykaa",
+      "title": "Lakme 9 to 5 Primer + Matte Lipstick",
+      "description": "Long-lasting matte lipstick available in 25+ shades.",
+      "link": "https://www.nykaa.com/search/result/?q=Lakme+9+to+5+Primer+Matte+Lipstick",
+      "category": "Beauty",
+      "discount": "35% OFF",
+      "ai_summary": "Lakme 9 to 5 primer matte lipstick — long-lasting and available in many shades."
+    },
+    {
+      "store": "BigBasket",
+      "title": "Fortune Sunlite Refined Sunflower Oil 5L",
+      "description": "Healthy everyday cooking oil in a value 5 litre pack.",
+      "link": "https://www.bigbasket.com/ps/?q=Fortune+Sunlite+Refined+Sunflower+Oil+5L&nc=as",
+      "category": "Groceries",
+      "discount": "22% OFF",
+      "ai_summary": "Fortune Sunlite sunflower oil 5L — healthy cooking oil at a value price."
+    },
+    {
+      "store": "Blinkit",
+      "title": "Amul Butter 500g",
+      "description": "Fresh salted butter delivered in minutes.",
+      "link": "https://blinkit.com/s/?q=Amul+Butter+500g",
+      "category": "Groceries",
+      "discount": "10% OFF",
+      "ai_summary": "Amul butter 500g — fresh, salted and delivered in minutes."
+    },
+    {
+      "store": "JioMart",
+      "title": "Aashirvaad Atta 10kg",
+      "description": "Whole wheat atta for soft rotis and daily meals.",
+      "link": "https://www.jiomart.com/search?text=Aashirvaad+Atta+10kg",
+      "category": "Groceries",
+      "discount": "15% OFF",
+      "ai_summary": "Aashirvaad atta 10kg — whole wheat flour for soft daily rotis."
+    },
+    {
+      "store": "Swiggy",
+      "title": "Biryani Combo from Paradise",
+      "description": "Flavourful Hyderabadi biryani with raita and salan.",
+      "link": "https://www.swiggy.com/search?query=Biryani",
+      "category": "Food",
+      "discount": "50% OFF",
+      "ai_summary": "Paradise biryani combo — Hyderabadi biryani with 50% off on Swiggy."
+    },
+    {
+      "store": "Zomato",
+      "title": "Pizza Hut Margherita Pizza",
+      "description": "Classic cheese margherita with choice of crust.",
+      "link": "https://www.zomato.com/ncr/restaurants?q=Pizza+Hut",
+      "category": "Food",
+      "discount": "40% OFF",
+      "ai_summary": "Pizza Hut margherita — classic cheese pizza at 40% off."
+    },
+    {
+      "store": "MakeMyTrip",
+      "title": "Delhi to Goa Round Trip Flight",
+      "description": "Lowest fares on flights with free date change.",
+      "link": "https://www.makemytrip.com/flight/search?tripType=R&itinerary=DEL-GOI-DEL&affid=YOUR_MMT_AFFID",
+      "category": "Travel",
+      "discount": "₹2500 OFF",
+      "ai_summary": "Delhi-Goa round trip flights — lowest fares with ₹2500 off."
+    },
+    {
+      "store": "Booking.com",
+      "title": "Goa Beach Resort 3N Stay",
+      "description": "3-night beachfront stay with breakfast and pool access.",
+      "link": "https://www.booking.com/searchresults.html?ss=Goa%2C%20India&aid=YOUR_BOOKING_AID",
+      "category": "Hotels",
+      "discount": "20% OFF",
+      "ai_summary": "Goa beach resort 3-night stay — beachfront rooms with breakfast."
+    }
+  ]
+}

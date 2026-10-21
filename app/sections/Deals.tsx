@@ -37,6 +37,20 @@ export default function Deals({
     [deals]
   );
 
+  const bestByStore = useMemo(() => {
+    const best = new Map<string, { key: string; ratio: number }>();
+    deals.forEach((deal) => {
+      const original = deal.originalPrice ?? 1;
+      const discounted = deal.discountedPrice ?? original;
+      const ratio = discounted / original;
+      const current = best.get(deal.store);
+      if (!current || ratio < current.ratio) {
+        best.set(deal.store, { key: `${deal.store}::${deal.title}`, ratio });
+      }
+    });
+    return new Set(Array.from(best.values()).map((v) => v.key));
+  }, [deals]);
+
   const filtered = useMemo(() => {
     const q = query.toLowerCase();
     return deals.filter(
@@ -110,7 +124,13 @@ export default function Deals({
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filtered.map((deal, index) => (
-              <DealCard key={index} deal={deal} showAlert={showAlert} premiumFeatures={premiumFeatures} />
+              <DealCard
+                key={index}
+                deal={deal}
+                showAlert={showAlert}
+                premiumFeatures={premiumFeatures}
+                isBest={bestByStore.has(`${deal.store}::${deal.title}`)}
+              />
             ))}
           </div>
         )}
