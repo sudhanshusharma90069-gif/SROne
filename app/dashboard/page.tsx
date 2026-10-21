@@ -46,7 +46,7 @@ export default function FreeDashboard() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-sm text-gray-300 mb-8">
               <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-              {user ? `Welcome back, ${user.name}` : 'Your personal free dashboard'}
+              {user ? `Welcome back, ${user.name} — ${user.role} plan` : 'Your personal free dashboard'}
             </div>
             <div className="flex items-center justify-center gap-3 mb-6">
               <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-brand-accent to-[#ff6c37] flex items-center justify-center shadow-lg shadow-brand-accent/20">
@@ -84,7 +84,7 @@ export default function FreeDashboard() {
           </div>
         </section>
 
-        <Deals showAlert={false} />
+        <Deals showAlert={false} premiumFeatures={false} />
       </main>
 
       <Footer />

@@ -112,7 +112,15 @@ function setStoredVotes(title: string, up: number, down: number, user: 'up' | 'd
   localStorage.setItem(`srone-vote-${title}`, JSON.stringify({ up, down, user }));
 }
 
-export default function DealCard({ deal, showAlert = true }: { deal: Deal; showAlert?: boolean }) {
+export default function DealCard({
+  deal,
+  showAlert = true,
+  premiumFeatures = true,
+}: {
+  deal: Deal;
+  showAlert?: boolean;
+  premiumFeatures?: boolean;
+}) {
   const brand = brands[deal.store] || { c1: '#f9a826', c2: '#ff6c37', text: '#1a1a2e' };
   const initial = deal.store.replace(/[^A-Za-z]/g, '').slice(0, 2).toUpperCase();
   const [logoFailed, setLogoFailed] = useState(false);
@@ -150,7 +158,11 @@ export default function DealCard({ deal, showAlert = true }: { deal: Deal; showA
   return (
     <>
       <div className="flex flex-col rounded-2xl overflow-hidden bg-brand-800/50 border border-white/10 card-hover">
-        <div
+        <a
+          href={deal.link}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={() => trackClick(deal.store, deal.title)}
           className="relative h-28 flex items-center px-6 overflow-hidden"
           style={{ background: `linear-gradient(135deg, ${brand.c1} 0%, ${brand.c2} 100%)` }}
         >
@@ -192,7 +204,7 @@ export default function DealCard({ deal, showAlert = true }: { deal: Deal; showA
           >
             {deal.discount}
           </span>
-        </div>
+        </a>
 
         <div className="flex flex-col flex-1 p-5">
           <h4 className="text-base font-bold text-white mb-1.5 leading-snug">{deal.title}</h4>
@@ -233,10 +245,12 @@ export default function DealCard({ deal, showAlert = true }: { deal: Deal; showA
             </div>
           </div>
 
-          <div className="mb-3 rounded-xl bg-zinc-900/50 p-2">
-            <p className="mb-1 text-[10px] font-medium uppercase tracking-wider text-zinc-400">30-day price trend</p>
-            <PriceChart data={history} />
-          </div>
+          {premiumFeatures && (
+            <div className="mb-3 rounded-xl bg-zinc-900/50 p-2">
+              <p className="mb-1 text-[10px] font-medium uppercase tracking-wider text-zinc-400">30-day price trend</p>
+              <PriceChart data={history} />
+            </div>
+          )}
 
           <div className="mb-4 flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -287,14 +301,16 @@ export default function DealCard({ deal, showAlert = true }: { deal: Deal; showA
             </a>
           </div>
 
-          <div className="flex items-center justify-between">
-            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-brand-accent">
-              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-              AI Pick
-            </span>
-          </div>
+          {premiumFeatures && (
+            <div className="flex items-center justify-between">
+              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-brand-accent">
+                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                AI Pick
+              </span>
+            </div>
+          )}
         </div>
       </div>
 

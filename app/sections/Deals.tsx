@@ -4,7 +4,13 @@ import { useEffect, useMemo, useState } from 'react';
 import DealCard from '../components/DealCard';
 import { Deal } from '../lib/types';
 
-export default function Deals({ showAlert = true }: { showAlert?: boolean }) {
+export default function Deals({
+  showAlert = true,
+  premiumFeatures = true,
+}: {
+  showAlert?: boolean;
+  premiumFeatures?: boolean;
+}) {
   const [deals, setDeals] = useState<Deal[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState('');
@@ -104,7 +110,7 @@ export default function Deals({ showAlert = true }: { showAlert?: boolean }) {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filtered.map((deal, index) => (
-              <DealCard key={index} deal={deal} showAlert={showAlert} />
+              <DealCard key={index} deal={deal} showAlert={showAlert} premiumFeatures={premiumFeatures} />
             ))}
           </div>
         )}
