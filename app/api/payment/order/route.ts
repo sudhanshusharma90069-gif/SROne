@@ -1,12 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '../../../lib/session';
-
-function getBaseUrl() {
-  if (process.env.CASHFREE_ENV === 'production') {
-    return 'https://api.cashfree.com/pg';
-  }
-  return 'https://sandbox.cashfree.com/pg';
-}
+import { getCashfreeConfig, cashfreeAuthHeaders } from '../../../lib/cashfree';
 
 export async function POST(req: NextRequest) {
   try {
@@ -16,45 +10,37 @@ export async function POST(req: NextRequest) {
     }
 
     const { phone } = await req.json();
-    if (!phone || phone.length < 10) {
-      return NextResponse.json({ error: 'Valid phone number is required' }, { status: 400 });
+    if (!phone || phone.replace(/\D/g, '').length < 10) {
+      return NextResponse.json({ error: 'Valid 10-digit phone number is required' }, { status: 400 });
     }
 
-    const clientId = process.env.CASHFREE_CLIENT_ID;
-    const clientSecret = process.env.CASHFREE_CLIENT_SECRET;
-    if (!clientId || !clientSecret) {
-      return NextResponse.json(
-        { error: 'Cashfree is not configured. Add CASHFREE_CLIENT_ID and CASHFREE_CLIENT_SECRET to environment variables.' },
-        { status: 500 }
-      );
+    const config = getCashfreeConfig();
+    if ('error' in config) {
+      return NextResponse.json({ error: config.error }, { status: 500 });
     }
 
-    const orderId = `srone-${user.id}-${Date.now()}`;
-    const returnUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'https://srone.vercel.app'}/subscribe?order_id=${orderId}`;
+    const orderId = `srone-${user.id}-${Date.now()}`.slice(0, 45);
+    const returnUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'https://srone.vercel.app'}/subscribe?order_id={order_id}`;
 
     const order = {
       order_id: orderId,
       order_amount: 9,
       order_currency: 'INR',
       customer_details: {
-        customer_id: user.id,
+        customer_id: user.id.slice(0, 50),
         customer_name: user.name,
         customer_email: user.email,
-        customer_phone: phone,
+        customer_phone: `+91${phone.replace(/\D/g, '').slice(-10)}`,
       },
       order_meta: {
         return_url: returnUrl,
-        notify_url: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://srone.vercel.app'}/api/payment/notify`,
       },
     };
 
-    const res = await fetch(`${getBaseUrl()}/orders`, {
+    const res = await fetch(`${config.baseUrl}/orders`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'x-client-id': clientId,
-        'x-client-secret': clientSecret,
-        'x-api-version': process.env.CASHFREE_API_VERSION || '2023-08-01',
+        ...cashfreeAuthHeaders(config),
         'x-request-id': `${orderId}-req`,
       },
       body: JSON.stringify(order),
@@ -62,8 +48,14 @@ export async function POST(req: NextRequest) {
 
     const data = await res.json();
     if (!res.ok) {
+      console.error('Cashfree create order failed:', res.status, data);
+      const message = data?.message || data?.error?.message || 'Unable to create Cashfree order';
       return NextResponse.json(
-        { error: data.message || 'Unable to create Cashfree order' },
+        {
+          error: message,
+          cashfree_status: res.status,
+          cashfree_response: data,
+        },
         { status: res.status }
       );
     }
@@ -71,9 +63,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       order_id: orderId,
       payment_session_id: data.payment_session_id,
-      mode: process.env.CASHFREE_ENV === 'production' ? 'production' : 'sandbox',
+      mode: config.env,
     });
-  } catch {
+  } catch (err) {
+    console.error('Create order exception:', err);
     return NextResponse.json({ error: 'Unable to create payment order' }, { status: 500 });
   }
 }

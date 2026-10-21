@@ -1,13 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSession, setSession } from '../../../lib/session';
 import { upgradeUserToPremium } from '../../../lib/users';
-
-function getBaseUrl() {
-  if (process.env.CASHFREE_ENV === 'production') {
-    return 'https://api.cashfree.com/pg';
-  }
-  return 'https://sandbox.cashfree.com/pg';
-}
+import { getCashfreeConfig, cashfreeAuthHeaders } from '../../../lib/cashfree';
 
 export async function POST(req: NextRequest) {
   try {
@@ -21,28 +15,28 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Order ID is required' }, { status: 400 });
     }
 
-    const clientId = process.env.CASHFREE_CLIENT_ID;
-    const clientSecret = process.env.CASHFREE_CLIENT_SECRET;
-    if (!clientId || !clientSecret) {
-      return NextResponse.json(
-        { error: 'Cashfree is not configured. Add CASHFREE_CLIENT_ID and CASHFREE_CLIENT_SECRET to environment variables.' },
-        { status: 500 }
-      );
+    const config = getCashfreeConfig();
+    if ('error' in config) {
+      return NextResponse.json({ error: config.error }, { status: 500 });
     }
 
-    const res = await fetch(`${getBaseUrl()}/orders/${order_id}`, {
+    const res = await fetch(`${config.baseUrl}/orders/${order_id}`, {
       headers: {
-        'x-client-id': clientId,
-        'x-client-secret': clientSecret,
-        'x-api-version': process.env.CASHFREE_API_VERSION || '2023-08-01',
+        ...cashfreeAuthHeaders(config),
         'x-request-id': `${order_id}-verify`,
       },
     });
 
     const data = await res.json();
     if (!res.ok) {
+      console.error('Cashfree verify order failed:', res.status, data);
+      const message = data?.message || data?.error?.message || 'Unable to verify payment with Cashfree';
       return NextResponse.json(
-        { error: data.message || 'Unable to verify payment with Cashfree' },
+        {
+          error: message,
+          cashfree_status: res.status,
+          cashfree_response: data,
+        },
         { status: res.status }
       );
     }
@@ -69,7 +63,8 @@ export async function POST(req: NextRequest) {
       next_billing: nextBilling.toISOString(),
       message: 'Premium activated successfully.',
     });
-  } catch {
+  } catch (err) {
+    console.error('Verify order exception:', err);
     return NextResponse.json({ error: 'Payment verification failed' }, { status: 500 });
   }
 }
