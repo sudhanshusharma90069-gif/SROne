@@ -26,15 +26,23 @@ export function getCashfreeConfig(): CashfreeConfig {
     };
   }
 
-  const explicitEnv = process.env.CASHFREE_ENV;
-  const isProduction =
-    explicitEnv === 'production' ||
-    clientId.toUpperCase().startsWith('PROD_');
+  const upperClientId = clientId.toUpperCase();
+  let env: 'production' | 'sandbox';
 
-  const baseUrl = isProduction
-    ? 'https://api.cashfree.com/pg'
-    : 'https://sandbox.cashfree.com/pg';
-  const env = isProduction ? 'production' : 'sandbox';
+  if (upperClientId.startsWith('TEST_')) {
+    env = 'sandbox';
+  } else if (upperClientId.startsWith('PROD_')) {
+    env = 'production';
+  } else if (process.env.CASHFREE_ENV === 'production') {
+    env = 'production';
+  } else {
+    env = 'sandbox';
+  }
+
+  const baseUrl =
+    env === 'production'
+      ? 'https://api.cashfree.com/pg'
+      : 'https://sandbox.cashfree.com/pg';
   const apiVersion = process.env.CASHFREE_API_VERSION || '2025-01-01';
 
   return { clientId, clientSecret, apiVersion, baseUrl, env };
