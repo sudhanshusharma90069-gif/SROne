@@ -20,6 +20,9 @@ import SmartReorder from '../sections/SmartReorder';
 import AIPredictions from '../sections/AIPredictions';
 import CartOptimizer from '../components/CartOptimizer';
 import ChatWidget from '../components/ChatWidget';
+import Header from '../components/Header';
+import About from '../sections/About';
+import Footer from '../sections/Footer';
 
 const generate30DayHistory = (basePrice, currentPrice, lowestPrice, highestPrice) => {
   const data = [];
@@ -397,6 +400,7 @@ export default function App() {
 
   return (
     <div className={`min-h-screen transition-colors duration-300 ${darkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
+      <Header />
       
       {/* Top AI Banner */}
       <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white text-xs py-2 px-4">
@@ -822,6 +826,8 @@ export default function App() {
         </div>
       )}
 
+      <About />
+      <Footer />
       <ChatWidget />
     </div>
   );
