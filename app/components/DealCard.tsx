@@ -314,14 +314,16 @@ export default function DealCard({
                 Set Price Alert
               </button>
             )}
-            <button
-              onClick={handleAdd}
-              className={`flex-1 rounded-lg px-3 py-2 text-xs font-semibold transition-colors ${
-                justAdded ? 'bg-emerald-600 text-white' : 'bg-zinc-800 text-zinc-200 hover:bg-zinc-700'
-              }`}
-            >
-              {justAdded ? 'Saved!' : 'Add to Auto-List'}
-            </button>
+            {onAddToList && (
+              <button
+                onClick={handleAdd}
+                className={`flex-1 rounded-lg px-3 py-2 text-xs font-semibold transition-colors ${
+                  justAdded ? 'bg-emerald-600 text-white' : 'bg-zinc-800 text-zinc-200 hover:bg-zinc-700'
+                }`}
+              >
+                {justAdded ? 'Saved!' : 'Add to Auto-List'}
+              </button>
+            )}
             <a
               href={deal.link}
               target="_blank"

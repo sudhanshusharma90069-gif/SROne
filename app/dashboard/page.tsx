@@ -4,9 +4,6 @@ import { useEffect, useState } from 'react';
 import Header from '../components/Header';
 import FestivalBanner from '../components/FestivalBanner';
 import Footer from '../sections/Footer';
-import AIPredictions from '../sections/AIPredictions';
-import SmartReorder from '../sections/SmartReorder';
-import CartOptimizer from '../components/CartOptimizer';
 import Deals from '../sections/Deals';
 
 export default function FreeDashboard() {
@@ -87,10 +84,7 @@ export default function FreeDashboard() {
           </div>
         </section>
 
-        <AIPredictions />
-        <SmartReorder />
-        <CartOptimizer />
-        <Deals showAlert={false} premiumFeatures={false} />
+        <Deals showAlert={false} premiumFeatures={false} enableSmartFeatures={false} />
       </main>
 
       <Footer />

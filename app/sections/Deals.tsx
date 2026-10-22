@@ -10,9 +10,11 @@ import { Deal } from '../lib/types';
 export default function Deals({
   showAlert = true,
   premiumFeatures = true,
+  enableSmartFeatures = true,
 }: {
   showAlert?: boolean;
   premiumFeatures?: boolean;
+  enableSmartFeatures?: boolean;
 }) {
   const [deals, setDeals] = useState<Deal[]>([]);
   const [loading, setLoading] = useState(true);
@@ -36,13 +38,15 @@ export default function Deals({
     load();
   }, []);
 
-  const usage = getUsage();
+  const usage = enableSmartFeatures ? getUsage() : {};
 
   const categories = useMemo(() => {
     const cats = Array.from(new Set(deals.map((d) => d.category)));
-    cats.sort((a, b) => (usage[b] || 0) - (usage[a] || 0));
+    if (enableSmartFeatures) {
+      cats.sort((a, b) => (usage[b] || 0) - (usage[a] || 0));
+    }
     return ['All', ...cats];
-  }, [deals, usageTick]);
+  }, [deals, usageTick, enableSmartFeatures]);
 
   const bestByStore = useMemo(() => {
     const best = new Map<string, { key: string; ratio: number }>();
@@ -68,24 +72,29 @@ export default function Deals({
           d.title.toLowerCase().includes(q) ||
           d.category.toLowerCase().includes(q))
     );
-    list.sort((a, b) => (usage[b.category] || 0) - (usage[a.category] || 0));
+    if (enableSmartFeatures) {
+      list.sort((a, b) => (usage[b.category] || 0) - (usage[a.category] || 0));
+    }
     return list;
-  }, [deals, query, activeCategory, usageTick]);
+  }, [deals, query, activeCategory, usageTick, enableSmartFeatures]);
 
   function selectCategory(c: string) {
     setActiveCategory(c);
-    if (c !== 'All') {
+    if (enableSmartFeatures && c !== 'All') {
       addUsage(c);
       setUsageTick((t) => t + 1);
     }
   }
 
   function handleView(deal: Deal) {
-    addUsage(deal.category);
-    setUsageTick((t) => t + 1);
+    if (enableSmartFeatures) {
+      addUsage(deal.category);
+      setUsageTick((t) => t + 1);
+    }
   }
 
   function handleAddToList(deal: Deal) {
+    if (!enableSmartFeatures) return;
     const mrp = deal.originalPrice;
     const bestPrice = deal.discountedPrice;
     if (!mrp || !bestPrice) {
@@ -191,8 +200,8 @@ export default function Deals({
                 showAlert={showAlert}
                 premiumFeatures={premiumFeatures}
                 isBest={bestByStore.has(`${deal.store}::${deal.title}`)}
-                onAddToList={handleAddToList}
-                onView={handleView}
+                onAddToList={enableSmartFeatures ? handleAddToList : undefined}
+                onView={enableSmartFeatures ? handleView : undefined}
               />
             ))}
           </div>

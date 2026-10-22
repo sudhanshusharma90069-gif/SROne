@@ -19,6 +19,9 @@ import Header from '../components/Header';
 import FestivalBanner from '../components/FestivalBanner';
 import Footer from '../sections/Footer';
 import Deals from '../sections/Deals';
+import AIPredictions from '../sections/AIPredictions';
+import SmartReorder from '../sections/SmartReorder';
+import CartOptimizer from '../components/CartOptimizer';
 import { formatPrice } from '../lib/prices';
 
 interface Recommendation {
@@ -244,8 +247,13 @@ export default function PremiumDashboard() {
         <section className="py-16 lg:py-24 bg-brand-800/30 min-h-[50vh]">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             {activeTab === 'Deals' && (
-              <div className="-mx-4 sm:-mx-6 lg:-mx-8">
-                <Deals />
+              <div className="space-y-10">
+                <AIPredictions />
+                <SmartReorder />
+                <div className="-mx-4 sm:-mx-6 lg:-mx-8">
+                  <Deals />
+                </div>
+                <CartOptimizer />
               </div>
             )}
 
