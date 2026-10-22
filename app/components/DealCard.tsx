@@ -175,7 +175,15 @@ export default function DealCard({
 
   return (
     <>
-      <div className="flex flex-col rounded-2xl overflow-hidden bg-brand-800/50 border border-white/10 card-hover">
+      <div
+        className="flex flex-col rounded-2xl overflow-hidden bg-brand-800/50 border border-white/10 card-hover cursor-pointer"
+        onClick={(e) => {
+          const t = e.target as HTMLElement;
+          if (t.closest('a') || t.closest('button')) return;
+          trackClick(deal.store, deal.title);
+          window.open(deal.link, '_blank', 'noopener,noreferrer');
+        }}
+      >
         <a
           href={deal.link}
           target="_blank"

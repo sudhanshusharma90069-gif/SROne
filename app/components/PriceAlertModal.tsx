@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { formatPrice } from '../lib/prices';
 import { Deal } from '../lib/types';
+import { savePriceAlert } from '../lib/price-alerts';
 
 export default function PriceAlertModal({
   open,
@@ -25,22 +26,32 @@ export default function PriceAlertModal({
     setLoading(true);
     setStatus('idle');
     try {
+      const payload = {
+        dealTitle: deal.title,
+        targetPrice: Number(targetPrice),
+        whatsappNumber: whatsapp,
+        currentPrice: deal.discountedPrice,
+      };
       const res = await fetch('/api/price-alert', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          dealTitle: deal.title,
-          targetPrice: Number(targetPrice),
-          whatsappNumber: whatsapp,
-          currentPrice: deal.discountedPrice,
-        }),
+        body: JSON.stringify(payload),
       });
-      const data = await res.json();
-      setStatus(data.success ? 'success' : 'error');
-      if (data.success) {
-        setTargetPrice('');
-        setWhatsapp('');
-      }
+      await res.json();
+
+      savePriceAlert({
+        id: Date.now().toString(),
+        title: deal.title,
+        targetPrice: Number(targetPrice),
+        currentPrice: deal.discountedPrice ?? deal.originalPrice ?? 0,
+        whatsappNumber: whatsapp,
+        status: 'Monitoring 24/7',
+        createdAt: new Date().toISOString(),
+      });
+
+      setStatus('success');
+      setTargetPrice('');
+      setWhatsapp('');
     } catch {
       setStatus('error');
     } finally {
@@ -88,7 +99,7 @@ export default function PriceAlertModal({
           </div>
 
           {status === 'success' && (
-            <p className="text-sm text-green-600">Alert saved! You will be notified on WhatsApp.</p>
+            <p className="text-sm text-green-600">Alert saved! We will notify you when the price drops.</p>
           )}
           {status === 'error' && (
             <p className="text-sm text-red-600">Something went wrong. Please try again.</p>

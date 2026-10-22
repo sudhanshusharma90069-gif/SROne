@@ -15,6 +15,7 @@ import {
 } from 'recharts';
 import { getUsage, addUsage } from '../lib/usage';
 import { getSavedItems, addSavedItem } from '../lib/auto-list';
+import { getPriceAlerts, savePriceAlert } from '../lib/price-alerts';
 import { computePrices } from '../lib/prices';
 import SmartReorder from '../sections/SmartReorder';
 import AIPredictions from '../sections/AIPredictions';
@@ -295,9 +296,19 @@ export default function App({ initialDeals = [] } = {}) {
       currentPrice: 71999,
       targetPrice: 70000,
       channel: 'WhatsApp + Push',
-      status: 'Monitoring 24/7'
+      status: 'Monitoring 24/7',
+      createdAt: new Date().toISOString()
     }
   ]);
+
+  useEffect(() => {
+    const saved = getPriceAlerts();
+    if (saved.length > 0) setPriceAlerts(saved);
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('srone-price-alerts', JSON.stringify(priceAlerts));
+  }, [priceAlerts]);
 
   const [isAiChatOpen, setIsAiChatOpen] = useState(false);
   const [chatInput, setChatInput] = useState('');
@@ -305,7 +316,7 @@ export default function App({ initialDeals = [] } = {}) {
   const [chatMessages, setChatMessages] = useState([
     {
       role: 'assistant',
-      text: 'नमस्ते! मैं आपका **OmniPulse AI Assistant** हूँ। मैंने आपके पिछले सर्च और यूज़ेज को एनालाइज करके आज की सबसे बेहतरीन 30-Day Lowest Deals ऊपर सेट कर दी हैं।'
+      text: 'नमस्ते! मैं आपका **SROne AI Assistant** हूँ। मैंने आपके पिछले सर्च और यूज़ेज को एनालाइज करके आज की सबसे बेहतरीन 30-Day Lowest Deals ऊपर सेट कर दी हैं।'
     }
   ]);
   const chatEndRef = useRef(null);
@@ -364,7 +375,8 @@ export default function App({ initialDeals = [] } = {}) {
       currentPrice: alertModalDeal.currentPrice,
       targetPrice: numericTarget,
       channel: alertChannel,
-      status: numericTarget >= alertModalDeal.currentPrice ? 'Target Hit!' : 'Monitoring 24/7'
+      status: numericTarget >= alertModalDeal.currentPrice ? 'Target Hit!' : 'Monitoring 24/7',
+      createdAt: new Date().toISOString()
     };
     setPriceAlerts(prev => [newAlert, ...prev]);
     logUserAction(`Set Price Alert @ ₹${numericTarget.toLocaleString('en-IN')} for ${alertModalDeal.title.slice(0, 20)}...`, alertModalDeal.subCategory);
@@ -434,7 +446,7 @@ export default function App({ initialDeals = [] } = {}) {
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-xl font-bold tracking-tight bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-                  OmniPulse AI
+                  SROne AI
                 </h1>
                 <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
                   Super-App
@@ -643,7 +655,8 @@ export default function App({ initialDeals = [] } = {}) {
               return (
                 <div
                   key={deal.id}
-                  className={`rounded-2xl border overflow-hidden flex flex-col justify-between transition-all duration-300 group ${
+                  onClick={() => handleDirectRedirect(deal)}
+                  className={`cursor-pointer rounded-2xl border overflow-hidden flex flex-col justify-between transition-all duration-300 group ${
                     darkMode ? 'bg-slate-900/90 border-slate-800 hover:border-indigo-500/50' : 'bg-white border-slate-200 shadow-sm'
                   }`}
                 >
@@ -701,7 +714,7 @@ export default function App({ initialDeals = [] } = {}) {
 
                       {/* Sparkline box */}
                       <div
-                        onClick={() => handleOpenAnalytics(deal)}
+                        onClick={(e) => { e.stopPropagation(); handleOpenAnalytics(deal); }}
                         className={`p-3 rounded-xl border cursor-pointer transition-all ${
                           darkMode ? 'bg-slate-950/80 border-slate-800' : 'bg-slate-50 border-slate-200'
                         }`}
@@ -723,9 +736,9 @@ export default function App({ initialDeals = [] } = {}) {
                     </div>
                   </div>
 
-                  <div className="p-5 pt-0 flex items-center gap-2.5">
+                  <div className="p-5 pt-0 flex items-center gap-2.5" onClick={(e) => e.stopPropagation()}>
                     <button
-                      onClick={() => handleOpenAlertModal(deal)}
+                      onClick={(e) => { e.stopPropagation(); handleOpenAlertModal(deal); }}
                       className={`px-3.5 py-2.5 rounded-xl text-xs font-bold border flex items-center justify-center gap-1.5 transition-all ${
                         hasActiveAlert ? 'bg-amber-500/20 border-amber-500 text-amber-300' : darkMode ? 'bg-slate-800 border-slate-700 text-slate-200' : 'bg-slate-100 border-slate-300 text-slate-800'
                       }`}
@@ -735,7 +748,7 @@ export default function App({ initialDeals = [] } = {}) {
                     </button>
 
                     <button
-                      onClick={() => handleDirectRedirect(deal)}
+                      onClick={(e) => { e.stopPropagation(); handleDirectRedirect(deal); }}
                       className="flex-1 py-2.5 px-4 rounded-xl text-xs font-bold bg-gradient-to-r from-indigo-600 to-purple-600 text-white flex items-center justify-center gap-1.5 shadow-lg shadow-indigo-600/20"
                     >
                       <span>Buy on {deal.platform}</span>
