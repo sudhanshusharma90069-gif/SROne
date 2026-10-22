@@ -231,7 +231,7 @@ function toPulseDeal(d, usage = {}) {
   };
 }
 
-export default function App() {
+export default function App({ initialDeals = [] } = {}) {
   const [darkMode, setDarkMode] = useState(true);
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -261,7 +261,10 @@ export default function App() {
   const [showAutomationModal, setShowAutomationModal] = useState(false);
   const [redirectingDeal, setRedirectingDeal] = useState(null);
 
-  const [deals, setDeals] = useState(INITIAL_DEALS);
+  const initialPulse = initialDeals.length
+    ? initialDeals.map((d) => toPulseDeal(d, {}))
+    : INITIAL_DEALS;
+  const [deals, setDeals] = useState(initialPulse);
   const [sroLoading, setSroLoading] = useState(true);
 
   useEffect(() => {
@@ -330,13 +333,13 @@ export default function App() {
         deal.subCategory.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesLowest = !onlyLowest30d || deal.currentPrice <= deal.lowest30d;
       return matchesCategory && matchesSearch && matchesLowest;
-    }).sort((a, b) => b.aiMatchScore - a.aiMatchScore);
+    }).sort((a, b) => b.couponDiscount - a.couponDiscount);
   }, [activeCategory, searchQuery, onlyLowest30d]);
 
   const topAiCuratedDeals = useMemo(() => {
     return [...deals]
-      .sort((a, b) => b.aiMatchScore - a.aiMatchScore)
-      .slice(0, 3);
+      .sort((a, b) => b.couponDiscount - a.couponDiscount)
+      .slice(0, 6);
   }, [deals]);
 
   const handleOpenAnalytics = (deal) => {
