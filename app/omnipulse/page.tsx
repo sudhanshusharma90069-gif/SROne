@@ -13,6 +13,13 @@ import {
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine
 } from 'recharts';
+import { getUsage, addUsage } from '../lib/usage';
+import { getSavedItems, addSavedItem } from '../lib/auto-list';
+import { computePrices } from '../lib/prices';
+import SmartReorder from '../sections/SmartReorder';
+import AIPredictions from '../sections/AIPredictions';
+import CartOptimizer from '../components/CartOptimizer';
+import ChatWidget from '../components/ChatWidget';
 
 const generate30DayHistory = (basePrice, currentPrice, lowestPrice, highestPrice) => {
   const data = [];
@@ -161,6 +168,66 @@ const INITIAL_DEALS = [
   }
 ];
 
+function toPulseDeal(d, usage = {}) {
+  const original = d.originalPrice ?? computePrices(d).originalPrice;
+  const current = d.discountedPrice ?? computePrices(d).discountedPrice;
+  const low = Math.min(original, current);
+  const high = Math.max(original, current);
+  const avg = Math.round((original + current) / 2);
+  const matchBoost = (usage[d.category] || 0) * 2;
+  const match = Math.min(99, 85 + matchBoost + Math.floor(Math.random() * 6));
+  const saving = original - current;
+  const discountPct = original ? Math.round((saving / original) * 100) : 0;
+  const categoryName = (d.category || '').toLowerCase();
+  const pulseCategory = /travel|hotel|railway|airport|recharge/.test(categoryName)
+    ? 'booking'
+    : /entertainment|movies|streaming|ott/.test(categoryName)
+    ? 'entertainment'
+    : 'shopping';
+  const platformColor = (() => {
+    const p = (d.store || '').toLowerCase();
+    if (p.includes('amazon')) return 'bg-amber-500 text-slate-950';
+    if (p.includes('flipkart')) return 'bg-blue-600 text-white';
+    if (p.includes('myntra')) return 'bg-rose-500 text-white';
+    if (p.includes('bigbasket')) return 'bg-lime-600 text-white';
+    if (p.includes('blinkit')) return 'bg-emerald-500 text-slate-950';
+    if (p.includes('jio')) return 'bg-purple-600 text-white';
+    if (p.includes('makemytrip') || p.includes('mmt')) return 'bg-red-600 text-white';
+    return 'bg-indigo-500 text-white';
+  })();
+  const image =
+    d.image ||
+    (pulseCategory === 'booking'
+      ? 'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=600&q=80'
+      : pulseCategory === 'entertainment'
+      ? 'https://images.unsplash.com/photo-1522869635100-9f4c5e86aa37?auto=format&fit=crop&w=600&q=80'
+      : 'https://images.unsplash.com/photo-1556742049-0cfed4f7a07d?auto=format&fit=crop&w=600&q=80');
+  return {
+    id: `${(d.store || 'deal').replace(/\s+/g, '-').toLowerCase()}-${(d.title || '').slice(0, 24).replace(/\s+/g, '-') || Date.now()}`,
+    category: pulseCategory,
+    subCategory: d.category || 'Shopping',
+    title: d.title,
+    platform: d.store,
+    platformColor,
+    platformUrl: d.link,
+    currentPrice: current,
+    originalPrice: original,
+    lowest30d: low,
+    highest30d: high,
+    avg30d: avg,
+    rating: 4.5,
+    reviews: d.store || 'Verified',
+    image,
+    aiMatchScore: match,
+    aiReason: d.ai_summary || `Top pick from ${d.store} in ${d.category}.`,
+    verdict: saving > 0 ? 'historical_low' : 'good_deal',
+    verdictText: saving > 0 ? `${discountPct}% OFF — Lowest today` : 'Best available price',
+    couponCode: d.discount || '',
+    couponDiscount: saving,
+    history: generate30DayHistory(avg, current, low, high),
+  };
+}
+
 export default function App() {
   const [darkMode, setDarkMode] = useState(true);
   const [activeCategory, setActiveCategory] = useState('all');
@@ -190,6 +257,28 @@ export default function App() {
   const [showAlertsDrawer, setShowAlertsDrawer] = useState(false);
   const [showAutomationModal, setShowAutomationModal] = useState(false);
   const [redirectingDeal, setRedirectingDeal] = useState(null);
+
+  const [deals, setDeals] = useState(INITIAL_DEALS);
+  const [sroLoading, setSroLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadSroDeals() {
+      try {
+        const res = await fetch('/api/deals');
+        const data = await res.json();
+        const raw = data?.deals || [];
+        if (raw.length > 0) {
+          const usage = getUsage();
+          setDeals(raw.map((d) => toPulseDeal(d, usage)));
+        }
+      } catch (err) {
+        console.error('SROne deals fetch failed', err);
+      } finally {
+        setSroLoading(false);
+      }
+    }
+    loadSroDeals();
+  }, []);
 
   const [priceAlerts, setPriceAlerts] = useState([
     {
@@ -230,7 +319,7 @@ export default function App() {
   };
 
   const filteredDeals = useMemo(() => {
-    return INITIAL_DEALS.filter(deal => {
+    return deals.filter(deal => {
       const matchesCategory = activeCategory === 'all' || deal.category === activeCategory;
       const matchesSearch =
         deal.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -242,10 +331,10 @@ export default function App() {
   }, [activeCategory, searchQuery, onlyLowest30d]);
 
   const topAiCuratedDeals = useMemo(() => {
-    return [...INITIAL_DEALS]
+    return [...deals]
       .sort((a, b) => b.aiMatchScore - a.aiMatchScore)
       .slice(0, 3);
-  }, []);
+  }, [deals]);
 
   const handleOpenAnalytics = (deal) => {
     setSelectedDealForAnalytics(deal);
@@ -493,7 +582,7 @@ export default function App() {
         </section>
 
         {/* Platform Categories & Filter */}
-        <section className="space-y-6">
+        <section id="deals" className="space-y-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className={`inline-flex p-1.5 rounded-2xl border overflow-x-auto ${
               darkMode ? 'bg-slate-900 border-slate-800' : 'bg-slate-200/70 border-slate-300'
@@ -651,6 +740,10 @@ export default function App() {
             })}
           </div>
         </section>
+
+        <AIPredictions />
+        <SmartReorder />
+        <CartOptimizer />
       </main>
 
       {/* Analytics Modal */}
@@ -729,67 +822,7 @@ export default function App() {
         </div>
       )}
 
-      {/* Floating AI Chat Assistant */}
-      <div className="fixed bottom-5 right-5 z-40">
-        {!isAiChatOpen ? (
-          <button
-            onClick={() => setIsAiChatOpen(true)}
-            className="px-4 py-3.5 rounded-2xl bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white font-bold text-xs shadow-2xl flex items-center gap-2.5"
-          >
-            <Bot className="w-5 h-5" />
-            <span>Ask AI Deal Assistant</span>
-          </button>
-        ) : (
-          <div className={`w-[350px] sm:w-[400px] h-[480px] rounded-2xl border shadow-2xl flex flex-col overflow-hidden ${
-            darkMode ? 'bg-slate-900 border-slate-700 text-slate-100' : 'bg-white border-slate-300 text-slate-900'
-          }`}>
-            <div className="p-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Bot className="w-5 h-5" />
-                <h4 className="font-bold text-xs">OmniPulse AI Assistant</h4>
-              </div>
-              <button onClick={() => setIsAiChatOpen(false)} className="p-1 hover:bg-white/20 rounded-lg">
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="flex-1 p-3.5 overflow-y-auto space-y-3 text-xs">
-              {chatMessages.map((m, idx) => (
-                <div key={idx} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[85%] p-3 rounded-2xl ${
-                    m.role === 'user' ? 'bg-indigo-600 text-white' : darkMode ? 'bg-slate-800 text-slate-100' : 'bg-slate-100 text-slate-800'
-                  }`}>
-                    {m.text}
-                  </div>
-                </div>
-              ))}
-              {isAiLoading && <div className="text-xs text-indigo-400">AI is analyzing price history...</div>}
-              <div ref={chatEndRef} />
-            </div>
-
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleSendMessage();
-              }}
-              className="p-3 border-t border-slate-800 flex items-center gap-2"
-            >
-              <input
-                type="text"
-                value={chatInput}
-                onChange={(e) => setChatInput(e.target.value)}
-                placeholder="Ask about price history or best deals..."
-                className={`flex-1 px-3 py-2 rounded-xl text-xs border focus:outline-none ${
-                  darkMode ? 'bg-slate-950 border-slate-800 text-white' : 'bg-slate-100 border-slate-300 text-slate-900'
-                }`}
-              />
-              <button type="submit" className="p-2 rounded-xl bg-indigo-600 text-white">
-                <Send className="w-4 h-4" />
-              </button>
-            </form>
-          </div>
-        )}
-      </div>
+      <ChatWidget />
     </div>
   );
 }
