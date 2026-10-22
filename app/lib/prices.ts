@@ -92,9 +92,16 @@ function hashItem(name: string): number {
   return Math.abs(h);
 }
 
-export function computeCartPrices(items: string[]): { blinkit: Record<string, number>; instamart: Record<string, number> } {
+export function computeCartPrices(items: string[]): {
+  blinkit: Record<string, number>;
+  instamart: Record<string, number>;
+  bigbasket: Record<string, number>;
+  jiomart: Record<string, number>;
+} {
   const blinkit: Record<string, number> = {};
   const instamart: Record<string, number> = {};
+  const bigbasket: Record<string, number> = {};
+  const jiomart: Record<string, number> = {};
 
   items.forEach((raw) => {
     const name = raw.trim();
@@ -103,7 +110,9 @@ export function computeCartPrices(items: string[]): { blinkit: Record<string, nu
     const base = (hashItem(key) % 250) + 20;
     blinkit[name] = Math.round(base * 0.95);
     instamart[name] = Math.round(base * 1.05);
+    bigbasket[name] = Math.round(base * 0.98);
+    jiomart[name] = Math.round(base * 0.9);
   });
 
-  return { blinkit, instamart };
+  return { blinkit, instamart, bigbasket, jiomart };
 }

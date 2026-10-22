@@ -1,6 +1,8 @@
 import Header from './components/Header';
 import FestivalBanner from './components/FestivalBanner';
 import Hero from './sections/Hero';
+import AIPredictions from './sections/AIPredictions';
+import SmartReorder from './sections/SmartReorder';
 import Deals from './sections/Deals';
 import CartOptimizer from './components/CartOptimizer';
 import About from './sections/About';
@@ -14,6 +16,8 @@ export default function Home() {
       <main>
         <FestivalBanner />
         <Hero />
+        <AIPredictions />
+        <SmartReorder />
         <Deals />
         <CartOptimizer />
         <About />

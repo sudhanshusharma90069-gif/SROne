@@ -2,6 +2,9 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import DealCard from '../components/DealCard';
+import { addSavedItem, SavedItem } from '../lib/auto-list';
+import { addUsage, getUsage } from '../lib/usage';
+import { computePrices } from '../lib/prices';
 import { Deal } from '../lib/types';
 
 export default function Deals({
@@ -15,6 +18,7 @@ export default function Deals({
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
+  const [usageTick, setUsageTick] = useState(0);
 
   useEffect(() => {
     const load = async () => {
@@ -32,10 +36,13 @@ export default function Deals({
     load();
   }, []);
 
-  const categories = useMemo(
-    () => ['All', ...Array.from(new Set(deals.map((d) => d.category)))],
-    [deals]
-  );
+  const usage = getUsage();
+
+  const categories = useMemo(() => {
+    const cats = Array.from(new Set(deals.map((d) => d.category)));
+    cats.sort((a, b) => (usage[b] || 0) - (usage[a] || 0));
+    return ['All', ...cats];
+  }, [deals, usageTick]);
 
   const bestByStore = useMemo(() => {
     const best = new Map<string, { key: string; ratio: number }>();
@@ -53,7 +60,7 @@ export default function Deals({
 
   const filtered = useMemo(() => {
     const q = query.toLowerCase();
-    return deals.filter(
+    const list = deals.filter(
       (d) =>
         (activeCategory === 'All' || d.category === activeCategory) &&
         (!q ||
@@ -61,7 +68,60 @@ export default function Deals({
           d.title.toLowerCase().includes(q) ||
           d.category.toLowerCase().includes(q))
     );
-  }, [deals, query, activeCategory]);
+    list.sort((a, b) => (usage[b.category] || 0) - (usage[a.category] || 0));
+    return list;
+  }, [deals, query, activeCategory, usageTick]);
+
+  function selectCategory(c: string) {
+    setActiveCategory(c);
+    if (c !== 'All') {
+      addUsage(c);
+      setUsageTick((t) => t + 1);
+    }
+  }
+
+  function handleView(deal: Deal) {
+    addUsage(deal.category);
+    setUsageTick((t) => t + 1);
+  }
+
+  function handleAddToList(deal: Deal) {
+    const mrp = deal.originalPrice;
+    const bestPrice = deal.discountedPrice;
+    if (!mrp || !bestPrice) {
+      const computed = computePrices({
+        category: deal.category,
+        discount: deal.discount,
+      });
+      addSavedItem({
+        id: Date.now(),
+        name: deal.title,
+        category: deal.category,
+        bestStore: deal.store,
+        mrp: computed.originalPrice,
+        bestPrice: computed.discountedPrice,
+        selected: true,
+        frequency: 'Added from Live Deals',
+        nextDue: 'Best Price Found Today',
+        autoSubscribe: false,
+      } as SavedItem);
+    } else {
+      addSavedItem({
+        id: Date.now(),
+        name: deal.title,
+        category: deal.category,
+        bestStore: deal.store,
+        mrp,
+        bestPrice,
+        selected: true,
+        frequency: 'Added from Live Deals',
+        nextDue: 'Best Price Found Today',
+        autoSubscribe: false,
+      } as SavedItem);
+    }
+    addUsage(deal.category, 2);
+    setUsageTick((t) => t + 1);
+  }
 
   return (
     <section id="deals" className="py-20 lg:py-28 bg-brand-800/30">
@@ -104,7 +164,7 @@ export default function Deals({
             {categories.map((c) => (
               <button
                 key={c}
-                onClick={() => setActiveCategory(c)}
+                onClick={() => selectCategory(c)}
                 className={`px-4 py-2 rounded-full text-xs font-semibold border transition-colors ${
                   activeCategory === c
                     ? 'bg-brand-accent text-brand-900 border-brand-accent'
@@ -112,6 +172,7 @@ export default function Deals({
                 }`}
               >
                 {c}
+                {c !== 'All' && usage[c] ? ` (${usage[c]})` : ''}
               </button>
             ))}
           </div>
@@ -130,6 +191,8 @@ export default function Deals({
                 showAlert={showAlert}
                 premiumFeatures={premiumFeatures}
                 isBest={bestByStore.has(`${deal.store}::${deal.title}`)}
+                onAddToList={handleAddToList}
+                onView={handleView}
               />
             ))}
           </div>

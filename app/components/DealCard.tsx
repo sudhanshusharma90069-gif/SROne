@@ -117,11 +117,15 @@ export default function DealCard({
   showAlert = true,
   premiumFeatures = true,
   isBest = false,
+  onAddToList,
+  onView,
 }: {
   deal: Deal;
   showAlert?: boolean;
   premiumFeatures?: boolean;
   isBest?: boolean;
+  onAddToList?: (deal: Deal) => void;
+  onView?: (deal: Deal) => void;
 }) {
   const brand = brands[deal.store] || { c1: '#f9a826', c2: '#ff6c37', text: '#1a1a2e' };
   const initial = deal.store.replace(/[^A-Za-z]/g, '').slice(0, 2).toUpperCase();
@@ -129,6 +133,7 @@ export default function DealCard({
   const [selectedCard, setSelectedCard] = useState(getSelectedCardName());
   const [alertOpen, setAlertOpen] = useState(false);
   const [votes, setVotes] = useState(getStoredVotes(deal.title));
+  const [justAdded, setJustAdded] = useState(false);
 
   const history = useMemo(
     () => generatePriceHistory(deal.discountedPrice ?? 0),
@@ -157,6 +162,17 @@ export default function DealCard({
     setVotes({ up, down, user });
   }
 
+  function handleView() {
+    trackClick(deal.store, deal.title);
+    onView?.(deal);
+  }
+
+  function handleAdd() {
+    onAddToList?.(deal);
+    setJustAdded(true);
+    setTimeout(() => setJustAdded(false), 1500);
+  }
+
   return (
     <>
       <div className="flex flex-col rounded-2xl overflow-hidden bg-brand-800/50 border border-white/10 card-hover">
@@ -164,7 +180,7 @@ export default function DealCard({
           href={deal.link}
           target="_blank"
           rel="noopener noreferrer"
-          onClick={() => trackClick(deal.store, deal.title)}
+          onClick={handleView}
           className="relative h-28 flex items-center px-6 overflow-hidden"
           style={{ background: `linear-gradient(135deg, ${brand.c1} 0%, ${brand.c2} 100%)` }}
         >
@@ -298,12 +314,20 @@ export default function DealCard({
                 Set Price Alert
               </button>
             )}
+            <button
+              onClick={handleAdd}
+              className={`flex-1 rounded-lg px-3 py-2 text-xs font-semibold transition-colors ${
+                justAdded ? 'bg-emerald-600 text-white' : 'bg-zinc-800 text-zinc-200 hover:bg-zinc-700'
+              }`}
+            >
+              {justAdded ? 'Saved!' : 'Add to Auto-List'}
+            </button>
             <a
               href={deal.link}
               target="_blank"
               rel="noopener noreferrer"
-              onClick={() => trackClick(deal.store, deal.title)}
-              className="flex-[2] inline-flex items-center justify-center rounded-lg px-5 py-2.5 font-semibold transition-opacity hover:opacity-90"
+              onClick={handleView}
+              className="flex-1 inline-flex items-center justify-center rounded-lg px-5 py-2.5 font-semibold transition-opacity hover:opacity-90"
               style={{ background: `linear-gradient(135deg, ${brand.c1} 0%, ${brand.c2} 100%)`, color: brand.text === '#1a1a2e' ? '#1a1a2e' : '#ffffff' }}
             >
               Grab Deal
