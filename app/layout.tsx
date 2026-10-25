@@ -14,6 +14,9 @@ export const metadata: Metadata = {
     icon: '/icon.svg',
     apple: '/icon-192.png',
   },
+  other: {
+    'impact-site-verification': '4b586f91-8fe7-4b0a-80f5-dd8cd66bd43f',
+  },
 };
 
 export const viewport: Viewport = {
