@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Store } from '../lib/types';
+import { getAffiliateUrl } from '../lib/affiliates';
 
 function getLogoUrl(link: string) {
   try {
@@ -119,10 +120,11 @@ export default function StoreCard({ store }: { store: Store }) {
 
   const [logoFailed, setLogoFailed] = useState(false);
   const firstLetter = store.name[0];
+  const clickUrl = getAffiliateUrl({ store: store.name, title: '', link: store.link });
 
   return (
     <a
-      href={store.link}
+      href={clickUrl}
       target="_blank"
       rel="noopener noreferrer"
       className="group relative p-6 rounded-2xl bg-gradient-to-b from-white/[0.07] to-white/[0.02] border border-white/10 card-hover overflow-hidden"

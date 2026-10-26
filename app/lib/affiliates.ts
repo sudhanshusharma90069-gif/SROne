@@ -1,7 +1,7 @@
-// Central affiliate ID config — paste your real IDs here once.
+// Central affiliate link config — paste your real links here once.
 // Get IDs from:
 //  - Amazon: amazon.in/associates
-//  - Flipkart: affiliate.flipkart.com
+//  - Flipkart: affiliate.flipkart.com / fktr.in
 //  - Most other stores: EarnKaro (earnkaro.com) or Cuelinks (cuelinks.com) — one account covers Myntra, Ajio, Nykaa, Swiggy, MakeMyTrip etc.
 
 export const AFFILIATE_IDS: Record<string, string> = {
@@ -12,6 +12,28 @@ export const AFFILIATE_IDS: Record<string, string> = {
   booking: 'YOUR_AFFILIATE_ID',
   shopify: 'YOUR_AFFILIATE_ID',
 };
+
+// Product-specific Flipkart affiliate links.
+// Key = exact product title (as shown on the site). Value = the fktr.in / Flipkart affiliate link.
+export const FLIPKART_PRODUCT_LINKS: Record<string, string> = {
+  'Samsung Galaxy S24 5G': 'https://fktr.in/4OT7HyJ',
+  // Add more titles here, e.g.:
+  // 'Apple iPhone 15 128GB': 'https://fktr.in/XXXXX',
+};
+
+type AffiliateInput = {
+  store?: string;
+  title?: string;
+  link?: string;
+};
+
+export function getAffiliateUrl({ store, title, link }: AffiliateInput): string {
+  const s = (store || '').toLowerCase();
+  if (s === 'flipkart') {
+    return FLIPKART_PRODUCT_LINKS[title || ''] || AFFILIATE_IDS.flipkart;
+  }
+  return link || '#';
+}
 
 // Commission rate estimates per store (%) — for admin dashboard estimates.
 // Update with real rates from your affiliate network dashboards.
@@ -39,7 +61,7 @@ export const COMMISSION_RATES: Record<string, number> = {
   'Reliance Digital': 3,
   Lenskart: 8,
   FirstCry: 10,
-  Pepperfry: 8,
+  Pepperfry: 10,
   Uber: 4,
   Rapido: 5,
   Shopify: 20,

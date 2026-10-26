@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { Deal } from '../lib/types';
 import { BANK_CARDS, getCardDiscount, getSelectedCardName, setSelectedCardName } from '../lib/cards';
 import { formatPrice, generatePriceHistory } from '../lib/prices';
+import { getAffiliateUrl } from '../lib/affiliates';
 import PriceChart from './PriceChart';
 import PriceAlertModal from './PriceAlertModal';
 
@@ -129,6 +130,8 @@ export default function DealCard({
 }) {
   const brand = brands[deal.store] || { c1: '#f9a826', c2: '#ff6c37', text: '#1a1a2e' };
   const initial = deal.store.replace(/[^A-Za-z]/g, '').slice(0, 2).toUpperCase();
+  const affiliateUrl = getAffiliateUrl({ store: deal.store, title: deal.title, link: deal.link });
+  const logoUrl = deal.store === 'Flipkart' ? 'https://www.flipkart.com' : deal.link;
   const [logoFailed, setLogoFailed] = useState(false);
   const [selectedCard, setSelectedCard] = useState(getSelectedCardName());
   const [alertOpen, setAlertOpen] = useState(false);
@@ -181,11 +184,11 @@ export default function DealCard({
           const t = e.target as HTMLElement;
           if (t.closest('a') || t.closest('button')) return;
           trackClick(deal.store, deal.title);
-          window.open(deal.link, '_blank', 'noopener,noreferrer');
+          window.open(affiliateUrl, '_blank', 'noopener,noreferrer');
         }}
       >
         <a
-          href={deal.link}
+          href={affiliateUrl}
           target="_blank"
           rel="noopener noreferrer"
           onClick={handleView}
@@ -202,7 +205,7 @@ export default function DealCard({
           />
           {!logoFailed ? (
             <img
-              src={getLogoUrl(deal.link)}
+              src={getLogoUrl(logoUrl)}
               alt={deal.store}
               loading="lazy"
               onError={() => setLogoFailed(true)}
@@ -333,7 +336,7 @@ export default function DealCard({
               </button>
             )}
             <a
-              href={deal.link}
+              href={affiliateUrl}
               target="_blank"
               rel="noopener noreferrer"
               onClick={handleView}
