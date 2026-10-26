@@ -81,7 +81,7 @@ const INITIAL_DEALS = [
     title: 'Sony WH-1000XM5 Wireless Noise Cancelling Headphones',
     platform: 'Flipkart',
     platformColor: 'bg-blue-600 text-white',
-    platformUrl: 'https://www.flipkart.com',
+    platformUrl: 'https://fktr.in/4OT7HyJ',
     currentPrice: 24990,
     originalPrice: 34990,
     lowest30d: 23990,

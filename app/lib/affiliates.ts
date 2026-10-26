@@ -6,7 +6,7 @@
 
 export const AFFILIATE_IDS: Record<string, string> = {
   amazon: 'https://link.amazon/B0dHvm5kb',
-  flipkart: 'YOUR_AFFILIATE_ID',
+  flipkart: 'https://fktr.in/4OT7HyJ',
   earnkaro: 'YOUR_AFFILIATE_ID',
   cuelinks: 'YOUR_AFFILIATE_ID',
   booking: 'YOUR_AFFILIATE_ID',
