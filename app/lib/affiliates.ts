@@ -6,7 +6,7 @@
 
 export const AFFILIATE_IDS: Record<string, string> = {
   amazon: 'https://link.amazon/B0dHvm5kb',
-  flipkart: 'https://fktr.in/4OT7HyJ',
+  flipkart: 'https://fktr.in/XJvTEq6',
   earnkaro: 'YOUR_AFFILIATE_ID',
   cuelinks: 'YOUR_AFFILIATE_ID',
   booking: 'YOUR_AFFILIATE_ID',
@@ -16,7 +16,7 @@ export const AFFILIATE_IDS: Record<string, string> = {
 // Product-specific Flipkart affiliate links.
 // Key = exact product title (as shown on the site). Value = the fktr.in / Flipkart affiliate link.
 export const FLIPKART_PRODUCT_LINKS: Record<string, string> = {
-  'Samsung Galaxy S24 5G': 'https://fktr.in/4OT7HyJ',
+  'Samsung Galaxy S24 5G': 'https://fktr.in/XJvTEq6',
   // Add more titles here, e.g.:
   // 'Apple iPhone 15 128GB': 'https://fktr.in/XXXXX',
 };
