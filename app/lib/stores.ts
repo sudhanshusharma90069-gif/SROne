@@ -17,7 +17,7 @@ export const storeCategories: StoreCategory[] = [
       {
         name: 'Flipkart',
         description: 'Mobiles, fashion, electronics, and groceries with fast delivery.',
-        link: 'https://www.flipkart.com?affid=YOUR_AFFILIATE_ID',
+        link: 'https://fktr.in/XJvTEq6',
       },
       {
         name: 'Meesho',
