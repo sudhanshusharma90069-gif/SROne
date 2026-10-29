@@ -16,6 +16,7 @@ import {
 import { getUsage, addUsage } from '../lib/usage';
 import { getSavedItems, addSavedItem } from '../lib/auto-list';
 import { getPriceAlerts, savePriceAlert } from '../lib/price-alerts';
+import { getAffiliateUrl } from '../lib/affiliates';
 import { computePrices } from '../lib/prices';
 import SmartReorder from '../sections/SmartReorder';
 import AIPredictions from '../sections/AIPredictions';
@@ -81,7 +82,7 @@ const INITIAL_DEALS = [
     title: 'Sony WH-1000XM5 Wireless Noise Cancelling Headphones',
     platform: 'Flipkart',
     platformColor: 'bg-blue-600 text-white',
-    platformUrl: 'https://www.flipkart.com',
+    platformUrl: 'https://fktr.in/4OT7HyJ',
     currentPrice: 24990,
     originalPrice: 34990,
     lowest30d: 23990,
@@ -213,7 +214,7 @@ function toPulseDeal(d, usage = {}) {
     title: d.title,
     platform: d.store,
     platformColor,
-    platformUrl: d.link,
+    platformUrl: getAffiliateUrl({ store: d.store, title: d.title, link: d.link || d.platformUrl }),
     currentPrice: current,
     originalPrice: original,
     lowest30d: low,
