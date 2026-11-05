@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AlertSubscription } from '../../lib/types';
+import { sendToZapier } from '../../lib/zapier';
 
 export async function POST(req: NextRequest) {
   try {
@@ -7,7 +8,7 @@ export async function POST(req: NextRequest) {
     const { dealTitle, targetPrice, whatsappNumber, priority, currentPrice } = body;
 
     if (!dealTitle || !targetPrice || !whatsappNumber || !priority) {
-      return NextResponse.json({ error: 'dealTitle, targetPrice, whatsappNumber and priority are required' }, { status: 400 });
+      return NextResponse.json({ success: false, error: 'dealTitle, targetPrice, whatsappNumber and priority are required' }, { status: 400 });
     }
 
     const payload = {
@@ -20,8 +21,12 @@ export async function POST(req: NextRequest) {
       createdAt: new Date().toISOString(),
     };
 
-    // TODO: push to Zapier / Make / Twilio webhook
-    // const webhookUrl = process.env.WHATSAPP_ALERT_WEBHOOK_URL;
+    try {
+      await sendToZapier('whatsapp_alert', payload);
+    } catch (error) {
+      console.error('Failed to send WhatsApp alert to Zapier', error);
+      return NextResponse.json({ success: false, error: 'Unable to queue alert. Please try again.' }, { status: 502 });
+    }
 
     return NextResponse.json({
       success: true,
@@ -29,6 +34,6 @@ export async function POST(req: NextRequest) {
       payload,
     });
   } catch {
-    return NextResponse.json({ error: 'Unable to queue alert' }, { status: 500 });
+    return NextResponse.json({ success: false, error: 'Unable to queue alert' }, { status: 500 });
   }
 }

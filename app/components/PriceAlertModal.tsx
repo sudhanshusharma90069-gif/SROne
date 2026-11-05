@@ -37,7 +37,8 @@ export default function PriceAlertModal({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-      await res.json();
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || 'Unable to save alert');
 
       savePriceAlert({
         id: Date.now().toString(),

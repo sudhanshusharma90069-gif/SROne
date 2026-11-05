@@ -160,8 +160,8 @@ export default function PremiumDashboard() {
         priority: alert.priority,
       }),
     });
-    const data = await res.json();
-    setAlert({ ...alert, status: data.success ? `${alert.priority === 'priority' ? 'Priority' : 'Standard'} alert saved` : 'Failed' });
+    const data = await res.json().catch(() => ({}));
+    setAlert({ ...alert, status: res.ok && data.success ? `${alert.priority === 'priority' ? 'Priority' : 'Standard'} alert saved` : 'Failed' });
     setTimeout(() => setAlert({ ...alert, status: '' }), 3000);
   }
 

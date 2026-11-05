@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { sendToZapier } from '../../lib/zapier';
 
 export async function POST(req: NextRequest) {
   try {
@@ -20,15 +21,22 @@ export async function POST(req: NextRequest) {
       createdAt: new Date().toISOString(),
     };
 
-    // TODO: connect to Zapier / Make webhook here
-    // await fetch(process.env.PRICE_ALERT_WEBHOOK_URL, { method: 'POST', body: JSON.stringify(payload) });
+    try {
+      await sendToZapier('price_alert', payload);
+    } catch (error) {
+      console.error('Failed to send price alert to Zapier', error);
+      return NextResponse.json(
+        { success: false, error: 'Unable to save alert. Please try again.' },
+        { status: 502 }
+      );
+    }
 
     return NextResponse.json({
       success: true,
       message: 'Price alert saved. We will notify you on WhatsApp when the price drops.',
       payload,
     });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { success: false, error: 'Unable to save alert. Please try again.' },
       { status: 500 }
