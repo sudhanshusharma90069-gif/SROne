@@ -16,6 +16,7 @@ export const metadata: Metadata = {
   },
   other: {
     'impact-site-verification': '4b586f91-8fe7-4b0a-80f5-dd8cd66bd43f',
+    'mitgo-verification': 'e5e4b496-9ae3-4ed2-88de-01fa52ba5a1b'
   },
 };
 
